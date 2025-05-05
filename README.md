@@ -1,1 +1,1 @@
-# GodotMobileTemplate
+# Godot Mobile Template

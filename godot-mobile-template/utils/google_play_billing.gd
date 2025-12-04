@@ -23,8 +23,9 @@ func _ready() -> void:
 	
 func _on_connected() -> void:
 	print("Google Play Billing Client Connected")
+	# This fetches the product details for ad_free on launch, if this is your only product can be useful, or customize as needed
 	#BillingClient.query_product_details([PlatformServices.PURCHASE_STRINGS[PlatformServices.PURCHASE.AD_FREE]], BillingClient.ProductType.INAPP)
-	_query_purchases()
+	_query_purchases() # get any purchases that have been made
 	
 	
 func _on_disconnected() -> void:
@@ -35,6 +36,7 @@ func _on_connect_error(response_code: int, debug_message: String) -> void:
 	print("Error code " + str(response_code))
 	print(debug_message)
 	
+# Returns the product details for your app
 func _on_query_product_details_response(query_result: Dictionary) -> void:
 	if query_result.response_code == BillingClient.BillingResponseCode.OK:
 		print("Product details query success")
@@ -46,6 +48,8 @@ func _on_query_product_details_response(query_result: Dictionary) -> void:
 		print("Product details query failed")
 		print("response_code: ", query_result.response_code, "debug_message: ", query_result.debug_message)
 	
+## Things that have been purchased will arrive here to be processed
+## Helpful for if the purchase was not acknowledged/provided, or for things like reinstating ad_free on reinstall
 func _on_query_purchases_response(query_result: Dictionary) -> void:
 	if query_result.response_code == BillingClient.BillingResponseCode.OK:
 		print("Purchase query success")
@@ -67,6 +71,7 @@ func _on_purchase_updated(result: Dictionary) -> void:
 func _on_consume_purchase_response() -> void:
 	pass
 	
+## After acknowledging the purchase pass it to handle purchase token to grant product
 func _on_acknowledge_purchase_response(result: Dictionary) -> void:
 	if result.response_code == BillingClient.BillingResponseCode.OK:
 		print("Acknowledge purchase success")
@@ -75,9 +80,11 @@ func _on_acknowledge_purchase_response(result: Dictionary) -> void:
 		print("Acknowledge purchase failed")
 		print("response_code: ", result.response_code, "debug_message: ", result.debug_message, "purchase_token: ", result.token)
 	
+## Get purchases that have been made of the INAPP variety
 func _query_purchases() -> void:
 	billing_client.query_purchases(BillingClient.ProductType.INAPP)
 	
+## Starts purchase flow for the provided item
 func purchase(item: String) -> void:
 	var result: Dictionary = billing_client.purchase(item)
 	if result.response_code == BillingClient.BillingResponseCode.OK:
@@ -86,6 +93,8 @@ func purchase(item: String) -> void:
 		print("Billing flow launch failed")
 		print("response_code: ", result.response_code, "debug_message: ", result.debug_message)
 
+## Check the product id for the purchase,
+## If it is not acknolwedged then acknowledge it
 func _process_purchase(_incoming_purchase: Dictionary) -> void:
 	pass
 	# Ad free example, see documentation for other purchases
@@ -93,9 +102,13 @@ func _process_purchase(_incoming_purchase: Dictionary) -> void:
 			#incoming_purchase.purchase_state == BillingClient.PurchaseState.PURCHASED:
 		#if not incoming_purchase.is_acknowledged:
 			#billing_client.acknowledge_purchase(incoming_purchase.purchase_token)
+		## This code may be good to rip out and just let the token section handle, leaving as I haven't tested without this
+		## You definitely would want to be careful with this code on products that can be bought multiple times
+		## like currencies. It is currently primarily targeted towards one-time purchases
 		#elif incoming_purchase.is_acknowledged:
 			#AdManager.get_ad_free()
 	
+## Grant the reward on successful purchase
 func _handle_purchase_token(purchase_token: String, purchase_successful: bool) -> void:
 	print("purchase_token: ", purchase_token)
 	print("purchase_successful: ", purchase_successful)

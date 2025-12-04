@@ -2,7 +2,7 @@ extends Control
 
 @onready var splashes_container: CenterContainer = $SplashesContainer
 @onready var policies_container: VBoxContainer = $PolicyContainer
-#@onready var rich_text_label: RichTextLabel = $PolicyContainer/MarginContainer/PanelContainer/RichTextLabel
+@onready var policies_label: RichTextLabel = $PolicyContainer/MarginContainer/PanelContainer/RichTextLabel
 
 @onready var go_to_main_delay: Timer = $GoToMainDelay
 @onready var start_delay: Timer = $StartDelay
@@ -18,23 +18,24 @@ extends Control
 var config: ConfigFile = ConfigFile.new()
 var config_path: String = "user://user_config.cfg"
 
-var splashes: Array
-
 ## Defaults to having the policies NOT accepted
 var policies_accepted: bool = false
 ## This should be toggled on when privacy policy is accepted
 var accept_input: bool = false
 
+var splashes: Array
 var transition_started: bool = false
 
+
+
 func _ready() -> void:
-	# if not t&c and privacy policy then load that component and don't start delay timer until accepted
-	#rich_text_label.meta_clicked.connect(_open_link)
+	# if not t&c and privacy policy accepted then load that component and don't start delay timer until accepted
+	policies_label.meta_clicked.connect(_open_link)
 	_load_config_file()
 	if !policies_accepted: return
 	_transition_in()
 
-	
+# Transition shows each of the children of SplashesContainer that are visible
 func _transition_in() -> void:
 	policies_container.call_deferred("set_visible", false)
 	splashes_container.call_deferred("set_visible", true)
@@ -67,6 +68,7 @@ func _load_config_file() -> bool:
 func _start_delay_timeout() -> void:
 	_fade()
 	
+# fade in and out each splash
 func _fade() -> void:
 	for splash: Control in splashes:
 		var tween: Tween = create_tween()
@@ -91,11 +93,11 @@ func _on_go_to_main_delay_timeout() -> void:
 func _open_link(meta: Variant) -> void:
 	OS.shell_open(meta)
 
-
+## Save that they have accepted the policies
 func _on_continue_pressed() -> void:
 	policies_accepted = true
 	_transition_in()
 	var _err: Error = config.load(config_path)
 	config.set_value("policies", "has_accepted_policies", true)
 	config.save(config_path)
-	#PlatformServices.cloud_save_config()
+	PlatformServices.cloud_save_config()

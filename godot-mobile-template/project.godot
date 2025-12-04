@@ -26,6 +26,7 @@ buses/default_bus_layout=""
 
 [autoload]
 
+TransitionScreen="*res://menus/components/transition_screen.tscn"
 SceneSwitcher="*res://utils/scene_switcher.gd"
 AdManager="*res://utils/ad_manager.gd"
 AudioManager="*res://utils/audio_manager.gd"

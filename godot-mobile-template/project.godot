@@ -22,12 +22,12 @@ config/icon="res://icon.svg"
 
 [audio]
 
-buses/default_bus_layout=""
+buses/default_bus_layout="uid://bvo848hrj8ukn"
 
 [autoload]
 
 TransitionScreen="*res://menus/components/transition_screen.tscn"
-SceneSwitcher="*res://utils/scene_switcher.gd"
+ScreenSwitcher="*res://utils/screen_switcher.gd"
 AdManager="*res://utils/ad_manager.gd"
 AudioManager="*res://utils/audio_manager.gd"
 PostHog="*res://addons/PostHog/post_hog.gd"

@@ -96,7 +96,9 @@ func _process_purchase(_incoming_purchase: Dictionary) -> void:
 		#elif incoming_purchase.is_acknowledged:
 			#AdManager.get_ad_free()
 	
-@warning_ignore("untyped_declaration")
-func _handle_purchase_token(_purchase_token, purchase_successful: bool) -> void:
-	if purchase_successful:
-		AdManager.get_ad_free()
+func _handle_purchase_token(purchase_token: String, purchase_successful: bool) -> void:
+	print("purchase_token: ", purchase_token)
+	print("purchase_successful: ", purchase_successful)
+	# purchase_token here is a bit of an unknown, I think this is how it works but haven't verified this snippet
+	#if purchase_successful and purchase_token == PlatformServices.PURCHASE_STRINGS[PlatformServices.PURCHASE.AD_FREE]:
+		#AdManager.get_ad_free()

@@ -85,10 +85,7 @@ func _fade() -> void:
 func _on_go_to_main_delay_timeout() -> void:
 	if transition_started: return
 	transition_started = true
-	#if AdManager.has_ad_free:
-		#SceneSwitcher.switch_scene("res://menus/screens/main_menu.tscn")
-	#else:		
-		#SceneSwitcher.switch_scene("res://menus/screens/temp_ad_free_screen.tscn")
+	ScreenSwitcher.switch_screen(ScreenSwitcher.SCREEN.MAIN_MENU)
 
 func _open_link(meta: Variant) -> void:
 	OS.shell_open(meta)

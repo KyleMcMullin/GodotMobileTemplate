@@ -1,0 +1,106 @@
+[gd_scene load_steps=7 format=3 uid="uid://geod0rub7qhm"]
+
+[ext_resource type="Script" uid="uid://lu6pdfjvdp5v" path="res://menus/screens/splash_screen.gd" id="1_fhrky"]
+[ext_resource type="Texture2D" uid="uid://cghsit3drwb2e" path="res://menus/assets/images/reimagined-outline-vertical-light.svg" id="1_uqbh4"]
+[ext_resource type="FontFile" uid="uid://ctecweyqs73sv" path="res://menus/assets/fonts/NugoSansLight.ttf" id="2_fhrky"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fhrky"]
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+expand_margin_left = 10.0
+expand_margin_top = 10.0
+expand_margin_right = 10.0
+expand_margin_bottom = 10.0
+
+[sub_resource type="Theme" id="Theme_lder6"]
+default_font = ExtResource("2_fhrky")
+Label/font_sizes/font_size = 60
+Label/fonts/font = ExtResource("2_fhrky")
+
+[sub_resource type="LabelSettings" id="LabelSettings_6usvf"]
+font = ExtResource("2_fhrky")
+font_size = 60
+
+[node name="SplashScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_fhrky")
+
+[node name="PolicyContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -0.5
+offset_right = 0.5
+grow_horizontal = 2
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PolicyContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/margin_top = 300
+
+[node name="PanelContainer" type="PanelContainer" parent="PolicyContainer/MarginContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fhrky")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="PolicyContainer/MarginContainer/PanelContainer"]
+layout_mode = 2
+text = "Policies"
+fit_content = true
+autowrap_mode = 0
+horizontal_alignment = 1
+
+[node name="MarginContainer2" type="MarginContainer" parent="PolicyContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 50
+
+[node name="AcceptPolicies" type="Button" parent="PolicyContainer/MarginContainer2"]
+layout_mode = 2
+text = "Continue"
+
+[node name="SplashesContainer" type="CenterContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Godot" type="TextureRect" parent="SplashesContainer"]
+layout_mode = 2
+texture = ExtResource("1_uqbh4")
+
+[node name="MAIC" type="Label" parent="SplashesContainer"]
+layout_mode = 2
+theme = SubResource("Theme_lder6")
+theme_type_variation = &"HeaderLarge"
+text = "M A I C"
+label_settings = SubResource("LabelSettings_6usvf")
+horizontal_alignment = 1
+uppercase = true
+
+[node name="GoToMainDelay" type="Timer" parent="."]
+wait_time = 0.25
+one_shot = true
+
+[node name="StartDelay" type="Timer" parent="."]
+wait_time = 0.35
+one_shot = true
+
+[connection signal="pressed" from="PolicyContainer/MarginContainer2/AcceptPolicies" to="." method="_on_continue_pressed"]
+[connection signal="timeout" from="GoToMainDelay" to="." method="_on_go_to_main_delay_timeout"]
+[connection signal="timeout" from="StartDelay" to="." method="_start_delay_timeout"]

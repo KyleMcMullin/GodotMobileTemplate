@@ -38,3 +38,5 @@ Key elements that will need to be done for plugins to work. This list is not exh
 - Install android build templates/binaries/everything needed to export. Make sure to put any relevant plugin folders into the android folder (see admob documentation)
 - Create app on google play console and do any necessary setup there for billing like adding your purchase options
 - Add leaderboards/achievements in google play console
+
+Godot Splash Screen Image comes from [KenneyNL Godot-SplasheScreens](https://github.com/KenneyNL/Godot-SplashScreens/tree/main)

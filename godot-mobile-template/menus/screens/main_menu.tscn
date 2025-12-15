@@ -23,4 +23,4 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Main Menu"
 
-[node name="4DirectionalSwipe" parent="." instance=ExtResource("1_28mqs")]
+[node name="DirectionalSwipe" parent="." instance=ExtResource("1_28mqs")]

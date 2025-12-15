@@ -1,6 +1,6 @@
 # GodotMobileTemplate
 
-## LAST UPDATED: 12/4/2025 - Godot v4.5.1
+## LAST UPDATED: 12/15/2025 - Godot v4.5.1
 
 A template designed to make starting mobile games with Godot much easier. This template provides several utils and helpful starter things to minimize initial setup and avoid spending time writing boiler plate code.
 

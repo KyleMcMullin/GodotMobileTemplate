@@ -27,13 +27,13 @@ buses/default_bus_layout="uid://bvo848hrj8ukn"
 [autoload]
 
 TransitionScreen="*res://menus/components/transition_screen.tscn"
-ScreenSwitcher="*res://utils/screen_switcher.gd"
-AdManager="*res://utils/ad_manager.gd"
-AudioManager="*res://utils/audio_manager.gd"
+ScreenSwitcher="*res://globals/screen_switcher.gd"
+AdManager="*res://globals/ad_manager.gd"
+AudioManager="*res://globals/audio_manager.gd"
 PostHog="*res://addons/PostHog/post_hog.gd"
-PlatformServices="*res://utils/platform_services.gd"
-GooglePlayBilling="*res://utils/google_play_billing.gd"
-GooglePlayServices="*res://utils/google_play_services.tscn"
+PlatformServices="*res://globals/platform_services.gd"
+GooglePlayBilling="*res://globals/google_play_billing.gd"
+GooglePlayServices="*res://globals/google_play_services.tscn"
 GodotPlayGameServices="*res://addons/GodotPlayGameServices/scripts/autoloads/godot_play_game_services.gd"
 
 [display]
@@ -52,8 +52,10 @@ enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg", "res
 
 folder_colors={
 "res://addons/": "orange",
+"res://audio/": "pink",
+"res://globals/": "purple",
 "res://menus/": "green",
-"res://utils/": "purple"
+"res://utils/": "teal"
 }
 
 [input_devices]

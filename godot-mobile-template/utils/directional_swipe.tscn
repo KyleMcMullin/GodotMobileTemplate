@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://oyydnuik283v"]
+
+[ext_resource type="Script" uid="uid://bokxtxwcn138y" path="res://utils/directional_swipe.gd" id="1_u2qrb"]
+
+[node name="DirectionalSwipe" type="Node"]
+script = ExtResource("1_u2qrb")

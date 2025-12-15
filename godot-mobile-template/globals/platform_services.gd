@@ -75,9 +75,9 @@ func show_achievements() -> void:
 	if platform == PLATFORM.ANDROID:
 		GooglePlayServices.show_achievements()
 		
-func add_score_to_leaderboard(number: int) -> void:
+func add_score_to_leaderboard(leaderboard: LEADERBOARD, number: int) -> void:
 	if platform == PLATFORM.ANDROID:
-		GooglePlayServices.add_score_to_leaderboard(number)
+		GooglePlayServices.add_score_to_leaderboard(leaderboard, number)
 		
 func show_leaderboard() -> void:
 	if platform == PLATFORM.ANDROID:

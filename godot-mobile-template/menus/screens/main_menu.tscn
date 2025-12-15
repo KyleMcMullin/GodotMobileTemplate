@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://dooy4vet36lmg"]
+[gd_scene load_steps=2 format=3 uid="uid://dooy4vet36lmg"]
+
+[ext_resource type="PackedScene" uid="uid://oyydnuik283v" path="res://utils/directional_swipe.tscn" id="1_28mqs"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -19,4 +21,6 @@ grow_vertical = 2
 [node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Tic Tac Mow"
+text = "Main Menu"
+
+[node name="4DirectionalSwipe" parent="." instance=ExtResource("1_28mqs")]

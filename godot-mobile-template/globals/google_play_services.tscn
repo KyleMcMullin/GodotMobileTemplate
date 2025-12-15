@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://bepgm4y6qrnwk"]
 
-[ext_resource type="Script" uid="uid://2hyepfeeb4ns" path="res://utils/google_play_services.gd" id="1_6u0yw"]
+[ext_resource type="Script" uid="uid://2hyepfeeb4ns" path="res://globals/google_play_services.gd" id="1_6u0yw"]
 [ext_resource type="Script" uid="uid://dj7yu47ndrrof" path="res://addons/GodotPlayGameServices/scripts/sign_in/sign_in_client.gd" id="2_6mvwj"]
 [ext_resource type="Script" uid="uid://t18se4plkfm0" path="res://addons/GodotPlayGameServices/scripts/achievements/achievements_client.gd" id="3_wpymy"]
 [ext_resource type="Script" uid="uid://b3wyb1emryjfb" path="res://addons/GodotPlayGameServices/scripts/leaderboards/leaderboards_client.gd" id="4_vq218"]

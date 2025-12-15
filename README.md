@@ -16,6 +16,7 @@ Key features:
 - PlatformServices util that obscures generalizes functionality for multiple platforms to support android and IOS. Basically takes function calls and routes them to the correct services
 - Adjust project settings for mobile including turning off quit on go back, emulating mouse/touch from each other, viewport width/height, portrait mode, stretch resizability, HDR 2D, and a few other helpful things for mobile
 - Includes PostHog implementation for analytics that is hooked up to many areas of the app already. By default uses anonymous events and saves device/OS info. Can be enabled or disabled.
+- DirectionalSwipe util that gives left/right/up/down swipes in a way that feels natural
 
 While this example lays the foundation for resizability, it will not handle all of that on its own. Control nodes should be quite easy but anything beyond that may require additional development/configuration to get working correctly, check out the Godot docs for that.
 

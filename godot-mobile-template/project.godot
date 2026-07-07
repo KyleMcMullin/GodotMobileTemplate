@@ -8,15 +8,19 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="GodotMobileTemplate"
 run/main_scene="uid://geod0rub7qhm"
 config/use_custom_user_dir=true
 config/quit_on_go_back=false
-config/features=PackedStringArray("4.5", "Mobile")
+config/features=PackedStringArray("4.7", "Mobile")
 boot_splash/show_image=false
-boot_splash/fullsize=false
+boot_splash/stretch_mode=0
 boot_splash/use_filter=false
 config/icon="res://icon.svg"
 
@@ -34,7 +38,7 @@ PostHog="*res://addons/PostHog/post_hog.gd"
 PlatformServices="*res://globals/platform_services.gd"
 GooglePlayBilling="*res://globals/google_play_billing.gd"
 GooglePlayServices="*res://globals/google_play_services.tscn"
-GodotPlayGameServices="*res://addons/GodotPlayGameServices/scripts/autoloads/godot_play_game_services.gd"
+GodotPlayGameServices="*uid://hns3465jghcn"
 
 [display]
 

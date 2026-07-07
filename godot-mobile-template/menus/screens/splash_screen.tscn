@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=4 uid="uid://geod0rub7qhm"]
+[gd_scene format=4 uid="uid://geod0rub7qhm"]
 
 [ext_resource type="Script" uid="uid://lu6pdfjvdp5v" path="res://menus/screens/splash_screen.gd" id="1_fhrky"]
 [ext_resource type="Texture2D" uid="uid://cghsit3drwb2e" path="res://menus/assets/images/reimagined-outline-vertical-light.svg" id="1_uqbh4"]
@@ -41,6 +41,15 @@ font_name = "Nugo Sans"
 style_name = "Light"
 font_weight = 300
 msdf_pixel_range = 8
+cache/0/variation_coordinates = {}
+cache/0/face_index = 0
+cache/0/embolden = 0.0
+cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
+cache/0/spacing_top = 0
+cache/0/spacing_bottom = 0
+cache/0/spacing_space = 0
+cache/0/spacing_glyph = 0
+cache/0/baseline_offset = 0.0
 cache/0/16/0/ascent = 13.0
 cache/0/16/0/descent = 4.0
 cache/0/16/0/underline_position = 1.59375
@@ -134,7 +143,7 @@ Label/fonts/font = SubResource("FontFile_lder6")
 [sub_resource type="LabelSettings" id="LabelSettings_6usvf"]
 font_size = 60
 
-[node name="SplashScreen" type="Control"]
+[node name="SplashScreen" type="Control" unique_id=1100021414]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -143,7 +152,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fhrky")
 
-[node name="PolicyContainer" type="VBoxContainer" parent="."]
+[node name="PolicyContainer" type="VBoxContainer" parent="." unique_id=1626556389]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -153,17 +162,17 @@ offset_right = 0.5
 grow_horizontal = 2
 alignment = 1
 
-[node name="MarginContainer" type="MarginContainer" parent="PolicyContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="PolicyContainer" unique_id=1355205383]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/margin_top = 300
 
-[node name="PanelContainer" type="PanelContainer" parent="PolicyContainer/MarginContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="PolicyContainer/MarginContainer" unique_id=1434905057]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_fhrky")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="PolicyContainer/MarginContainer/PanelContainer"]
+[node name="RichTextLabel" type="RichTextLabel" parent="PolicyContainer/MarginContainer/PanelContainer" unique_id=1178032310]
 layout_mode = 2
 text = "Put things here like 
 terms & conditions,
@@ -172,15 +181,15 @@ fit_content = true
 autowrap_mode = 0
 horizontal_alignment = 1
 
-[node name="MarginContainer2" type="MarginContainer" parent="PolicyContainer"]
+[node name="MarginContainer2" type="MarginContainer" parent="PolicyContainer" unique_id=280915092]
 layout_mode = 2
 theme_override_constants/margin_top = 50
 
-[node name="AcceptPolicies" type="Button" parent="PolicyContainer/MarginContainer2"]
+[node name="AcceptPolicies" type="Button" parent="PolicyContainer/MarginContainer2" unique_id=56156504]
 layout_mode = 2
 text = "Accept"
 
-[node name="SplashesContainer" type="CenterContainer" parent="."]
+[node name="SplashesContainer" type="CenterContainer" parent="." unique_id=658238321]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -189,11 +198,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Godot" type="TextureRect" parent="SplashesContainer"]
+[node name="Godot" type="TextureRect" parent="SplashesContainer" unique_id=201962265]
 layout_mode = 2
 texture = ExtResource("1_uqbh4")
 
-[node name="COMPANY" type="Label" parent="SplashesContainer"]
+[node name="COMPANY" type="Label" parent="SplashesContainer" unique_id=739416811]
 layout_mode = 2
 theme = SubResource("Theme_lder6")
 theme_type_variation = &"HeaderLarge"
@@ -202,11 +211,11 @@ label_settings = SubResource("LabelSettings_6usvf")
 horizontal_alignment = 1
 uppercase = true
 
-[node name="GoToMainDelay" type="Timer" parent="."]
+[node name="GoToMainDelay" type="Timer" parent="." unique_id=1498680101]
 wait_time = 0.25
 one_shot = true
 
-[node name="StartDelay" type="Timer" parent="."]
+[node name="StartDelay" type="Timer" parent="." unique_id=1571562146]
 wait_time = 0.35
 one_shot = true
 

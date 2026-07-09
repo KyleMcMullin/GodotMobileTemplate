@@ -4,6 +4,15 @@ extends Control
 @onready var policies_container: VBoxContainer = $PolicyContainer
 @onready var policies_label: RichTextLabel = $PolicyContainer/MarginContainer/PanelContainer/RichTextLabel
 
+@onready var age_gate_container: VBoxContainer = $AgeGateContainer
+@onready var age_input: LineEdit = $AgeGateContainer/MarginContainer2/VBoxContainer/AgeInput
+@onready var invalid_age_label: Label = $AgeGateContainer/MarginContainer2/VBoxContainer/InvalidAgeLabel
+@onready var child_notice_container: VBoxContainer = $ChildNoticeContainer
+@onready var child_notice_label: RichTextLabel = $ChildNoticeContainer/MarginContainer/PanelContainer/RichTextLabel
+
+## Players who report an age under this are flagged as a child session.
+const AGE_THRESHOLD_YEARS: int = 16
+
 @onready var go_to_main_delay: Timer = $GoToMainDelay
 @onready var start_delay: Timer = $StartDelay
 
@@ -29,10 +38,19 @@ var transition_started: bool = false
 
 
 func _ready() -> void:
-	# if not t&c and privacy policy accepted then load that component and don't start delay timer until accepted
+	# Age gate goes first; nothing else shows until the child flag is known.
 	policies_label.meta_clicked.connect(_open_link)
+	child_notice_label.meta_clicked.connect(_open_link)
 	_load_config_file()
-	if !policies_accepted: return
+	if !AdManager.age_verified:
+		_show_age_gate()
+		return
+	if !policies_accepted:
+		_show_policy_step()
+		return
+	# Fire app-opened every launch for non-child returning users only.
+	if !AdManager.is_child:
+		PostHog.capture_app_loaded()
 	_transition_in()
 
 # Transition shows each of the children of SplashesContainer that are visible
@@ -90,11 +108,60 @@ func _on_go_to_main_delay_timeout() -> void:
 func _open_link(meta: Variant) -> void:
 	OS.shell_open(meta)
 
-## Save that they have accepted the policies
+## Accept-policies handler for the non-child path.
 func _on_continue_pressed() -> void:
 	policies_accepted = true
-	_transition_in()
 	var _err: Error = config.load(config_path)
 	config.set_value("policies", "has_accepted_policies", true)
 	config.save(config_path)
 	PlatformServices.cloud_save_config()
+	PostHog.capture_app_loaded()
+	_transition_in()
+
+func _show_age_gate() -> void:
+	policies_container.visible = false
+	child_notice_container.visible = false
+	age_gate_container.visible = true
+
+## Strips any non-digit character as it's typed/pasted.
+func _on_age_input_text_changed(new_text: String) -> void:
+	var digits_only: String = ""
+	for character: String in new_text:
+		if character.is_valid_int():
+			digits_only += character
+	if digits_only != new_text:
+		age_input.text = digits_only
+		age_input.caret_column = digits_only.length()
+
+## Validates the entered age and flags the session as child/non-child.
+func _on_age_submit_pressed() -> void:
+	var entered: String = age_input.text.strip_edges()
+	if not entered.is_valid_int() or entered.to_int() < 0:
+		invalid_age_label.visible = true
+		return
+	var age: int = entered.to_int()
+	var under_age: bool = age < AGE_THRESHOLD_YEARS
+	AdManager.set_child_directed(under_age)
+	if under_age:
+		PostHog.disable()
+	_show_policy_step()
+
+## Shows the normal policy-accept screen for non-child sessions, or the
+## informational notice for child sessions.
+func _show_policy_step() -> void:
+	age_gate_container.visible = false
+	if AdManager.is_child:
+		policies_container.visible = false
+		child_notice_container.visible = true
+	else:
+		child_notice_container.visible = false
+		policies_container.visible = true
+
+## Child branch's Continue; skips analytics and cloud save so no data leaves the device.
+func _on_child_notice_continue_pressed() -> void:
+	policies_accepted = true
+	var _err: Error = config.load(config_path)
+	config.set_value("policies", "has_accepted_policies", true)
+	config.save(config_path)
+	child_notice_container.visible = false
+	_transition_in()

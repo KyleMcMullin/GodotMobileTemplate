@@ -40,7 +40,9 @@ data = PackedByteArray("AAEAAAAQAQAABAAARkZUTY+167QAAFLEAAAAHEdERUYAFQAUAABPuAAA
 font_name = "Nugo Sans"
 style_name = "Light"
 font_weight = 300
+subpixel_positioning = 0
 msdf_pixel_range = 8
+msdf_size = 128
 cache/0/variation_coordinates = {}
 cache/0/face_index = 0
 cache/0/embolden = 0.0
@@ -153,6 +155,7 @@ grow_vertical = 2
 script = ExtResource("1_fhrky")
 
 [node name="PolicyContainer" type="VBoxContainer" parent="." unique_id=1626556389]
+visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -189,6 +192,95 @@ theme_override_constants/margin_top = 50
 layout_mode = 2
 text = "Accept"
 
+[node name="AgeGateContainer" type="VBoxContainer" parent="." unique_id=838870892]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -0.5
+offset_right = 0.5
+grow_horizontal = 2
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="AgeGateContainer" unique_id=208099220]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/margin_top = 300
+
+[node name="PanelContainer" type="PanelContainer" parent="AgeGateContainer/MarginContainer" unique_id=1614228712]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fhrky")
+
+[node name="QuestionLabel" type="Label" parent="AgeGateContainer/MarginContainer/PanelContainer" unique_id=1397712711]
+custom_minimum_size = Vector2(200, 30)
+layout_mode = 2
+text = "Please enter your age:"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="MarginContainer2" type="MarginContainer" parent="AgeGateContainer" unique_id=1344648222]
+layout_mode = 2
+theme_override_constants/margin_top = 50
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AgeGateContainer/MarginContainer2" unique_id=783245566]
+layout_mode = 2
+alignment = 1
+
+[node name="AgeInput" type="LineEdit" parent="AgeGateContainer/MarginContainer2/VBoxContainer" unique_id=260312868]
+layout_mode = 2
+max_length = 3
+virtual_keyboard_type = 2
+
+[node name="InvalidAgeLabel" type="Label" parent="AgeGateContainer/MarginContainer2/VBoxContainer" unique_id=753796083]
+visible = false
+modulate = Color(1, 0.4, 0.4, 1)
+layout_mode = 2
+text = "Please enter a valid age"
+horizontal_alignment = 1
+
+[node name="SubmitButton" type="Button" parent="AgeGateContainer/MarginContainer2/VBoxContainer" unique_id=1929793906]
+layout_mode = 2
+text = "Continue"
+
+[node name="ChildNoticeContainer" type="VBoxContainer" parent="." unique_id=1665583256]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -0.5
+offset_right = 0.5
+grow_horizontal = 2
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="ChildNoticeContainer" unique_id=477893928]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/margin_top = 300
+
+[node name="PanelContainer" type="PanelContainer" parent="ChildNoticeContainer/MarginContainer" unique_id=434239109]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fhrky")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="ChildNoticeContainer/MarginContainer/PanelContainer" unique_id=601611860]
+custom_minimum_size = Vector2(280, 120)
+layout_mode = 2
+bbcode_enabled = true
+text = "Some features like cloud save, leaderboards, and personalized ads are unavailable. See our [url=https://example.com/privacy]Privacy Policy[/url] and [url=https://example.com/terms]Terms & Conditions[/url]."
+fit_content = true
+autowrap_mode = 2
+horizontal_alignment = 1
+
+[node name="MarginContainer2" type="MarginContainer" parent="ChildNoticeContainer" unique_id=1703808096]
+layout_mode = 2
+theme_override_constants/margin_top = 50
+
+[node name="ContinueButton" type="Button" parent="ChildNoticeContainer/MarginContainer2" unique_id=1505248842]
+layout_mode = 2
+text = "Continue"
+
 [node name="SplashesContainer" type="CenterContainer" parent="." unique_id=658238321]
 visible = false
 layout_mode = 1
@@ -220,5 +312,8 @@ wait_time = 0.35
 one_shot = true
 
 [connection signal="pressed" from="PolicyContainer/MarginContainer2/AcceptPolicies" to="." method="_on_continue_pressed"]
+[connection signal="text_changed" from="AgeGateContainer/MarginContainer2/VBoxContainer/AgeInput" to="." method="_on_age_input_text_changed"]
+[connection signal="pressed" from="AgeGateContainer/MarginContainer2/VBoxContainer/SubmitButton" to="." method="_on_age_submit_pressed"]
+[connection signal="pressed" from="ChildNoticeContainer/MarginContainer2/ContinueButton" to="." method="_on_child_notice_continue_pressed"]
 [connection signal="timeout" from="GoToMainDelay" to="." method="_on_go_to_main_delay_timeout"]
 [connection signal="timeout" from="StartDelay" to="." method="_start_delay_timeout"]

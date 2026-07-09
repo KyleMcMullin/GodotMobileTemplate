@@ -92,22 +92,24 @@ func increment_achievement(achievement: ACHIEVEMENT, value: int = 1) -> void:
 func cloud_save_config() -> void:
 	if platform == PLATFORM.ANDROID:
 		GooglePlayServices.cloud_save_config()
-		
+
 func delete_save_data() -> void:
 	if platform == PLATFORM.ANDROID:
 		GooglePlayServices.delete_save_data()
-		
+
 func signed_in_success() -> void:
 	signed_in.emit()
 	if platform == PLATFORM.ANDROID:
 		is_user_authenticated = GooglePlayServices.is_user_authenticated
 	else:
 		is_user_authenticated = false
-	
+
 func purchase(item: PURCHASE) -> void:
 	if platform == PLATFORM.ANDROID:
 		GooglePlayBilling.purchase(PURCHASE_STRINGS[item])
 
+# TODO(coppa): sign_in() isn't guarded for is_child yet - confirm whether
+# Play Games Services/Game Center has a compliant known-child path before adding one.
 func sign_in() -> void:
 	if platform == PLATFORM.ANDROID:
 		GooglePlayServices.sign_in()

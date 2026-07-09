@@ -1,0 +1,106 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://menus/components/parental_gate.gd" id="1_parental_gate"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_parental_gate"]
+bg_color = Color(0.145, 0.145, 0.165, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.4)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+
+[node name="ParentalGate" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_parental_gate")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Scrim" type="ColorRect" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -110.0
+offset_right = 140.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_parental_gate")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/PanelContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer/Control/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Parental Gate"
+horizontal_alignment = 1
+
+[node name="QuestionLabel" type="Label" parent="CanvasLayer/Control/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 30)
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="AnswerInput" type="LineEdit" parent="CanvasLayer/Control/PanelContainer/VBoxContainer"]
+layout_mode = 2
+max_length = 3
+horizontal_alignment = 1
+virtual_keyboard_type = 2
+
+[node name="WrongAnswerLabel" type="Label" parent="CanvasLayer/Control/PanelContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+text = "Try again"
+horizontal_alignment = 1
+modulate = Color(1, 0.4, 0.4, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/PanelContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CancelButton" type="Button" parent="CanvasLayer/Control/PanelContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Cancel"
+
+[node name="ConfirmButton" type="Button" parent="CanvasLayer/Control/PanelContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Confirm"
+
+[connection signal="pressed" from="CanvasLayer/Control/PanelContainer/VBoxContainer/HBoxContainer/CancelButton" to="." method="_on_cancel_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/PanelContainer/VBoxContainer/HBoxContainer/ConfirmButton" to="." method="_on_confirm_pressed"]

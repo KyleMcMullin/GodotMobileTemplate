@@ -50,9 +50,11 @@ func _ready() -> void:
 	if include_screen_size:
 		auto_include_properties["$screen_width"] = get_window().size.x
 		auto_include_properties["$screen_height"] = get_window().size.y
-		
+
+## Captures the "app opened" event
+func capture_app_loaded() -> void:
 	capture("app_loaded")
-	
+
 ## Disables PostHog event capturing, saves the preference to config
 func disable() -> void:
 	enabled = false

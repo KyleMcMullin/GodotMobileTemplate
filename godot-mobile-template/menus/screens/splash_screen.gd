@@ -56,6 +56,7 @@ func _ready() -> void:
 # Transition shows each of the children of SplashesContainer that are visible
 func _transition_in() -> void:
 	policies_container.call_deferred("set_visible", false)
+	age_gate_container.call_deferred("set_visible", false)
 	splashes_container.call_deferred("set_visible", true)
 	accept_input = true
 	splashes = splashes_container.get_children()

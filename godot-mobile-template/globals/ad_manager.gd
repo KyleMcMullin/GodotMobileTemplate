@@ -5,7 +5,16 @@ signal got_ad_free
 signal has_form
 signal manual_form_loaded
 
+## Emitted once the AdMob SDK has finished initializing and ads may be loaded.
+signal ads_initialized
+
 var is_development: bool = false
+
+## The Next-Gen Mobile Ads SDK initializes strictly asynchronously and throws if an ad
+## is loaded beforehand, so ad-loading code must gate on this (or await [signal ads_initialized]).
+var is_initialized: bool = false
+
+var _initialization_requested: bool = false
 
 var has_ad_free: bool = false
 var has_temp_ad_free: bool = false
@@ -36,7 +45,19 @@ func _ready() -> void:
 	request.tag_for_under_age_of_consent = is_child
 	UserMessagingPlatform.consent_information.update(request, _on_consent_info_updated_success, _on_consent_info_updated_failure)
 	if UserMessagingPlatform.consent_information.get_consent_status() == UserMessagingPlatform.consent_information.ConsentStatus.OBTAINED:
-		MobileAds.initialize()
+		_initialize_ads()
+
+## Kicks off SDK initialization, which is asynchronous. Safe to call more than once;
+## only the first call reaches the SDK, since consent can resolve down two paths.
+func _initialize_ads() -> void:
+	if _initialization_requested:
+		return
+	_initialization_requested = true
+	var listener: OnInitializationCompleteListener = OnInitializationCompleteListener.new()
+	listener.on_initialization_complete = func(_status: InitializationStatus) -> void:
+		is_initialized = true
+		ads_initialized.emit()
+	MobileAds.initialize(listener)
 
 ## Load config file to check if they have ad free
 func _load_config_file() -> bool:
@@ -131,7 +152,7 @@ func _on_consent_form_load_failure(form_error : FormError) -> void:
 func _on_consent_form_dismissed(_form_error : FormError) -> void:
 	if UserMessagingPlatform.consent_information.get_consent_status() == UserMessagingPlatform.consent_information.ConsentStatus.OBTAINED:
 		# App can start requesting ads.
-		MobileAds.initialize()
+		_initialize_ads()
 		return
 	# Handle dismissal by reloading form
 	load_form()

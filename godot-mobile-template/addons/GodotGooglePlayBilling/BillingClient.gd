@@ -56,9 +56,11 @@ enum ReplacementMode {
 	WITHOUT_PRORATION = 3,
 	# Replacement takes effect immediately, and the user is charged full price of new plan and
 	# is given a full billing cycle of subscription, plus remaining prorated time from the old plan.
-	CHARGE_FULL_PRICE = 5,
+	CHARGE_FULL_PRICE = 4,
 	# The new purchase takes effect immediately, the new plan will take effect when the old item expires.
-	DEFERRED = 6
+	DEFERRED = 5,
+	# Indicates that this plan should remain unchanged in the new purchase.
+	KEEP_EXISTING = 6
 }
 
 var _plugin_singleton: JNISingleton
@@ -109,17 +111,17 @@ func query_product_details(product_list: PackedStringArray, product_type: Produc
 	if _plugin_singleton:
 		_plugin_singleton.queryProductDetails(product_list, product_type_str)
 
-func query_purchases(product_type: ProductType) -> void:
+func query_purchases(product_type: ProductType, include_suspended_subs: bool = false) -> void:
 	var product_type_str = "inapp"
 	if product_type == ProductType.SUBS:
 		product_type_str = "subs"
 	
 	if _plugin_singleton:
-		_plugin_singleton.queryPurchases(product_type_str)
+		_plugin_singleton.queryPurchases(product_type_str, include_suspended_subs)
 
-func purchase(product_id: String, is_offer_personalized: bool = false) -> Dictionary:
+func purchase(product_id: String, purchase_option_id: String = "", offer_id: String = "", is_offer_personalized: bool = false) -> Dictionary:
 	if _plugin_singleton:
-		return _plugin_singleton.purchase(product_id, is_offer_personalized)
+		return _plugin_singleton.purchase(product_id, purchase_option_id, offer_id, is_offer_personalized)
 	return Dictionary()
 
 func purchase_subscription(product_id: String, base_plan_id: String, offer_id: String = "", is_offer_personalized: bool = false) -> Dictionary:
@@ -127,9 +129,9 @@ func purchase_subscription(product_id: String, base_plan_id: String, offer_id: S
 		return _plugin_singleton.purchaseSubscription(product_id, base_plan_id, offer_id, is_offer_personalized)
 	return Dictionary()
 
-func update_subscription(old_purchase_token: String, replacement_mode: ReplacementMode, new_product_id: String, base_plan_id: String, offer_id: String = "", is_offer_personalized: bool = false) -> Dictionary:
+func update_subscription(old_product_id: String, old_purchase_token: String, replacement_mode: ReplacementMode, new_product_id: String, base_plan_id: String, offer_id: String = "", is_offer_personalized: bool = false) -> Dictionary:
 	if _plugin_singleton:
-		return _plugin_singleton.updateSubscription(new_product_id, base_plan_id, offer_id, old_purchase_token, replacement_mode, is_offer_personalized)
+		return _plugin_singleton.updateSubscription(old_product_id, old_purchase_token, replacement_mode, new_product_id, base_plan_id, offer_id, is_offer_personalized)
 	return Dictionary()
 
 func consume_purchase(purchase_token: String):

@@ -2,6 +2,9 @@
 
 ## LAST UPDATED: 12/15/2025 - Godot v4.5.1
 
+> **This repo must be marked as a Template repository** in Settings → General →
+> check "Template repository", or the "Use this template" button will not appear.
+
 A template designed to make starting mobile games with Godot much easier. This template provides several utils and helpful starter things to minimize initial setup and avoid spending time writing boiler plate code.
 
 Key features:
@@ -19,6 +22,61 @@ Key features:
 - DirectionalSwipe util that gives left/right/up/down swipes in a way that feels natural
 
 While this example lays the foundation for resizability, it will not handle all of that on its own. Control nodes should be quite easy but anything beyond that may require additional development/configuration to get working correctly, check out the Godot docs for that.
+
+## CI/CD — starting a new game
+
+Every game made from this template is born with a working build pipeline. The
+pipeline logic itself is **not** in this repo — it lives in
+[**godot-ci**](https://github.com/KyleMcMullin/godot-ci) and is referenced live by
+`.github/workflows/ci.yml`. "Use this template" copies files once with no link back,
+so anything copied here would go stale immediately; keeping the logic in `godot-ci`
+means a fix there applies to every game, including ones created long ago.
+
+### Steps
+
+1. Click **Use this template** → create your repo.
+2. Edit `.github/workflows/ci.yml`: set `android-package-name`, `ios-bundle-id`,
+   `ios-team-id`, and the preset names.
+3. Open the project in Godot and regenerate `export_presets.cfg`
+   (Project → Export). The committed one is an annotated placeholder, not a working
+   config — read its header.
+4. Add the repo secrets listed in
+   [godot-ci's README](https://github.com/KyleMcMullin/godot-ci#secrets).
+5. Open a PR to check the plumbing — PRs run tests only — then push to `main`.
+
+### What runs when
+
+| Trigger | Result |
+|---|---|
+| Pull request | Tests only. Never exports, never deploys. |
+| Push to `main` | Test → export → Play **internal** track + **TestFlight**. |
+| Push tag `v*` | Test → export → Play **production** + **App Store review**. |
+
+`enable-ios` ships as `false`. Leave it that way until Apple enrollment and signing
+are done, or every push to `main` will fail on the iOS job.
+
+### Tests
+
+Testing uses **gdUnit4**. `./run_tests.sh` at the repo root runs the suite, and CI
+runs that same script — so local and CI results always agree.
+
+```bash
+./run_tests.sh                    # whole suite
+./run_tests.sh res://tests/unit   # a subset
+```
+
+gdUnit4 is not bundled with this template. Until you install it (Godot → AssetLib →
+"gdUnit4") and add a `tests/` folder, the script skips and CI stays green. The script
+stashes your real `user://` save data before running and restores it afterwards, so
+tests never clobber your local game state.
+
+**Before any deploy can work**, you need store accounts, a keystore, API keys and app
+listings. That is a one-time, multi-day process (Apple enrolment alone takes 24–48h).
+Work through
+[godot-ci/SETUP.md](https://github.com/KyleMcMullin/godot-ci/blob/main/SETUP.md).
+
+For the full pipeline explanation, inputs, secrets table, and known first-run rough
+edges, see [godot-ci's README](https://github.com/KyleMcMullin/godot-ci#readme).
 
 ## IMPORTANT NOTES
 

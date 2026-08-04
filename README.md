@@ -1,6 +1,8 @@
 # GodotMobileTemplate
 
-## LAST UPDATED: 12/15/2025 - Godot v4.5.1
+## LAST UPDATED: 08/03/2026 - Godot v4.7.1
+
+Bundled plugin versions: AdMob v5.0.0, Play Billing 3.3.0, Play Games Services 3.4.0.
 
 > **This repo must be marked as a Template repository** in Settings → General →
 > check "Template repository", or the "Use this template" button will not appear.
@@ -43,6 +45,10 @@ means a fix there applies to every game, including ones created long ago.
 4. Add the repo secrets listed in
    [godot-ci's README](https://github.com/KyleMcMullin/godot-ci#secrets).
 5. Open a PR to check the plumbing — PRs run tests only — then push to `main`.
+
+If your game uses AdMob, also read [AdMob binaries and CI](#admob-binaries-and-ci)
+below — the plugin's native binaries are gitignored by default and CI cannot fetch
+them.
 
 ### What runs when
 
@@ -90,11 +96,25 @@ Anything in the addons folder comes from plugins that have their own licenses. D
 Key elements that will need to be done for plugins to work. This list is not exhaustive, again, read the documentation, please
 
 - Setup auth for Google Play Services following instructions on GitHub
-- Put your Game ID in the Godot Play Game Services tab on the bottom menu
+- Put your Game ID in **Project → Export → Android → `godot_play_game_services/game_id`**. Play Games Services dropped its bottom-panel editor dock in 3.3.0, so this is no longer set from a tab.
 - Create a PostHog app and copy your api key into posthog.json
-- Create an admob account, make sure you practice with test ads from the plugin documentation.
-- Install android build templates/binaries/everything needed to export. Make sure to put any relevant plugin folders into the android folder (see admob documentation)
+- Create an admob account and set your App ID in **Project Settings → `admob/general/android/app_id`** (and `admob/general/ios/app_id` for iOS). Both default to Google's test IDs, so practice with test ads first — but a real ID is required before shipping.
+- Download the AdMob native binaries via the editor: **AdMob → Android → Download & Install** (and the iOS submenu if you ship iOS). See the note below about committing them.
+- Install android build templates/binaries/everything needed to export
 - Create app on google play console and do any necessary setup there for billing like adding your purchase options
 - Add leaderboards/achievements in google play console
+
+### AdMob binaries and CI
+
+The AdMob plugin ships its own `addons/admob/android/.gitignore` containing `/bin`,
+so the native binaries it downloads are **not** committed. A fresh clone of this
+repo has none, and CI does not download them — the Android export then builds
+without the AdMob plugin and logs `... doesn't exists, please check your
+addons/admob/android/bin folder`.
+
+If you want AdMob in CI-produced builds, remove the `/bin` line from
+`addons/admob/android/.gitignore` and commit the binaries (same for
+`addons/admob/ios/.gitignore`). Otherwise disable AdMob in Project Settings so the
+export stops looking for them.
 
 Godot Splash Screen Image comes from [KenneyNL Godot-SplasheScreens](https://github.com/KenneyNL/Godot-SplashScreens/tree/main)

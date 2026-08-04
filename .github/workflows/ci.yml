@@ -14,6 +14,13 @@ on:
 
 jobs:
   ci:
+    # Required, not optional: export-android auto-bumps version/code and commits it
+    # back to main, since Play rejects a version code it has already accepted. A
+    # called workflow cannot hold more permission than its caller grants, so dropping
+    # this makes every deploy fail at the commit step.
+    permissions:
+      contents: write
+
     # TODO: pin to a tag or SHA once the shared workflow settles, e.g.
     #   uses: KyleMcMullin/godot-ci/.github/workflows/godot-ci.yml@v1
     # @main means every run picks up the latest shared logic - convenient while

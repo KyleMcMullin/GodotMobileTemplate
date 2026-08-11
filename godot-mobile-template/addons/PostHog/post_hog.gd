@@ -9,7 +9,9 @@ var distinct_id: String = ""
 ## https://posthog.com/docs/data/anonymous-vs-identified-events
 var anonymous_events: bool = true:
 	set = _update_anonymous_events
-var enabled: bool = true
+## Opt-in: analytics stay off until the player explicitly consents, so no event
+## and no persistent identifier exists before then.
+var enabled: bool = false
 
 signal error_occurred(e: Error)
 signal api_response(response: Variant)
@@ -36,7 +38,8 @@ const config_path: String = "user://user_config.cfg"
 func _ready() -> void:
 	_update_anonymous_events(anonymous_events)
 	_load_post_hog_json()
-	_load_post_hog_user_json()
+	if enabled:
+		_load_post_hog_user_json()
 	if include_platform:
 		auto_include_properties["platform"] = get_os_platform()
 	if include_app_version:
@@ -71,6 +74,10 @@ func enable() -> void:
 func capture(event_name: String, properties: Dictionary = {}) -> void:
 	if not enabled:
 		return
+	# Minted on first consented capture rather than at startup, so a player who
+	# never opts in leaves no persistent identifier on disk.
+	if distinct_id.is_empty():
+		_load_post_hog_user_json()
 	properties.merge(auto_include_properties)
 	_send(event_name, properties)
 
@@ -194,7 +201,7 @@ func _load_config_file() -> bool:
 	if err != OK:
 		return false
 	
-	enabled = config.get_value("analytics", "PostHog", true)
+	enabled = config.get_value("analytics", "PostHog", false)
 	return enabled
 
 func _save_config_file() -> void:

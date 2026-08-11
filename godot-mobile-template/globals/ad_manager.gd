@@ -29,6 +29,21 @@ var age_verified: bool = false
 ## always hardcoded to MAX_AD_CONTENT_RATING_G.
 const ADULT_MAX_AD_CONTENT_RATING: String = RequestConfiguration.MAX_AD_CONTENT_RATING_T
 
+## One entry per place the game offers a rewarded unlock, so each can be reported
+## on and priced separately in AdMob.
+enum REWARDED_AD {} # example: EXTRA_LIVES
+
+## Google's public test unit is "ca-app-pub-3940256099942544/5224354917"; swap in
+## the real unit ids before release.
+const REWARDED_AD_UNIT_IDS: Dictionary = {} # example: REWARDED_AD.EXTRA_LIVES: "ca-app-pub-.../..."
+
+var _rewarded_ad: RewardedAd
+## Runs only once the user actually earns the reward, never on skip or failure.
+var _on_rewarded_earned: Callable = Callable()
+var _rewarded_load_callback: RewardedAdLoadCallback = RewardedAdLoadCallback.new()
+var _rewarded_content_callback: FullScreenContentCallback = FullScreenContentCallback.new()
+var _rewarded_earned_listener: OnUserEarnedRewardListener = OnUserEarnedRewardListener.new()
+
 var config: ConfigFile = ConfigFile.new()
 const config_path: String = "user://user_config.cfg"
 
@@ -37,10 +52,16 @@ var _consent_form: ConsentForm
 func _ready() -> void:
 	_load_config_file()
 	_apply_child_directed_request_configuration()
-	# Update consent information
-	# If the player is in an area that requires specific consent that they have yet to provide
-	# then show them the form
-	# otherwise, if consent has been obtained, initialize the ads plugin
+	_setup_rewarded_callbacks()
+	# On a first launch the age gate hasn't been answered yet, so the consent
+	# request would carry the wrong age tagging. set_child_directed() starts the
+	# flow instead, once the player has told us how old they are.
+	if age_verified:
+		start_consent_flow()
+
+## Updates consent information and, if a form is required, shows it.
+## Otherwise, if consent has already been obtained, initializes the ads plugin.
+func start_consent_flow() -> void:
 	var request: ConsentRequestParameters = ConsentRequestParameters.new()
 	request.tag_for_under_age_of_consent = is_child
 	UserMessagingPlatform.consent_information.update(request, _on_consent_info_updated_success, _on_consent_info_updated_failure)
@@ -80,11 +101,14 @@ func _save_config_file() -> void:
 	#PlatformServices.cloud_save_config()
 
 ## Called by the age-gate flow as soon as a child/non-child determination is made.
+## Starts the consent flow, deliberately deferred until now so the first UMP
+## request is tagged correctly.
 func set_child_directed(under_age: bool) -> void:
 	is_child = under_age
 	age_verified = true
 	_save_config_file()
 	_apply_child_directed_request_configuration()
+	start_consent_flow()
 
 func _apply_child_directed_request_configuration() -> void:
 	var request_configuration: RequestConfiguration = RequestConfiguration.new()
@@ -97,22 +121,31 @@ func _apply_child_directed_request_configuration() -> void:
 	MobileAds.set_request_configuration(request_configuration)
 
 ## Permanently erases all local and cloud user data except the ad-free purchase
-## entitlement, then quits since state re-hydrates from disk on next launch.
+## entitlement and the age-gate answer, then quits since state re-hydrates from
+## disk on next launch.
 func delete_all_user_data() -> void:
 	PlatformServices.delete_save_data()
-	_wipe_config_preserving_purchases()
+	_wipe_config_preserving_purchase_and_age_gate()
 	if FileAccess.file_exists(PostHog.USER_FILE_PATH):
 		DirAccess.remove_absolute(PostHog.USER_FILE_PATH)
 	get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 	get_tree().quit()
 
-## Deletes the config file, then restores just the ad-free flag if the player had it.
-func _wipe_config_preserving_purchases() -> void:
+## Deletes the config file, then restores just the ad-free flag if the player had
+## it. The age-gate answer is kept for the same reason in reverse: a wipe must
+## not reclassify a child as an adult.
+func _wipe_config_preserving_purchase_and_age_gate() -> void:
 	var had_ad_free: bool = has_ad_free
+	var was_age_verified: bool = age_verified
+	var was_child: bool = is_child
 	if FileAccess.file_exists(config_path):
 		DirAccess.remove_absolute(config_path)
 	if had_ad_free:
 		config.set_value("ads", "ad_free", true)
+	if was_age_verified:
+		config.set_value("child_safety", "age_verified", true)
+		config.set_value("child_safety", "is_child", was_child)
+	if had_ad_free or was_age_verified:
 		config.save(config_path)
 	
 func get_ad_free() -> void:
@@ -125,7 +158,52 @@ func get_ad_free() -> void:
 # This is ad_free that expires when the session (app) closes, does not save to config file
 func get_temporary_ad_free() -> void:
 	has_temp_ad_free = true
-	
+
+## Loads and shows the rewarded ad for [param ad]. [param on_earned] runs only
+## when the reward is genuinely earned - a skipped, failed, or dismissed ad grants
+## nothing. Players who already paid for ad-free are rewarded immediately.
+func show_rewarded_ad(ad: REWARDED_AD, on_earned: Callable) -> void:
+	# Off-device there is no ad inventory, so gated features would be unreachable
+	if has_ad_free or is_development or not (PlatformServices.is_android() or PlatformServices.is_ios()):
+		on_earned.call()
+		return
+
+	# Loading before the SDK is up throws, so treat it like any other load failure
+	if not is_initialized:
+		print("rewarded ad requested before the ads SDK finished initializing")
+		return
+
+	_on_rewarded_earned = on_earned
+	RewardedAdLoader.new().load(REWARDED_AD_UNIT_IDS[ad], AdRequest.new(), _rewarded_load_callback)
+
+func _setup_rewarded_callbacks() -> void:
+	_rewarded_load_callback.on_ad_loaded = _on_rewarded_ad_loaded
+	_rewarded_load_callback.on_ad_failed_to_load = _on_rewarded_ad_failed_to_load
+	_rewarded_earned_listener.on_user_earned_reward = _on_user_earned_reward
+	_rewarded_content_callback.on_ad_dismissed_full_screen_content = _destroy_rewarded_ad
+	_rewarded_content_callback.on_ad_failed_to_show_full_screen_content = func(ad_error: AdError) -> void:
+		print("rewarded ad failed to show: ", ad_error.message)
+		_destroy_rewarded_ad()
+
+func _on_rewarded_ad_loaded(rewarded_ad: RewardedAd) -> void:
+	_rewarded_ad = rewarded_ad
+	_rewarded_ad.full_screen_content_callback = _rewarded_content_callback
+	_rewarded_ad.show(_rewarded_earned_listener)
+
+func _on_rewarded_ad_failed_to_load(ad_error: LoadAdError) -> void:
+	print("rewarded ad failed to load: ", ad_error.message)
+	_on_rewarded_earned = Callable()
+
+func _on_user_earned_reward(_rewarded_item: RewardedItem) -> void:
+	if _on_rewarded_earned.is_valid():
+		_on_rewarded_earned.call()
+	_on_rewarded_earned = Callable()
+
+func _destroy_rewarded_ad() -> void:
+	if _rewarded_ad:
+		_rewarded_ad.destroy()
+		_rewarded_ad = null
+
 func _on_consent_info_updated_success() -> void:
 	# The consent information state was updated.
 	# You are now ready to check if a form is available.

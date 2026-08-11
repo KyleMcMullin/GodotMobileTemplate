@@ -9,6 +9,8 @@ extends Control
 @onready var invalid_age_label: Label = $AgeGateContainer/MarginContainer2/VBoxContainer/InvalidAgeLabel
 @onready var child_notice_container: VBoxContainer = $ChildNoticeContainer
 @onready var child_notice_label: RichTextLabel = $ChildNoticeContainer/MarginContainer/PanelContainer/RichTextLabel
+@onready var analytics_container: VBoxContainer = $AnalyticsConsentContainer
+@onready var analytics_label: RichTextLabel = $AnalyticsConsentContainer/MarginContainer/PanelContainer/RichTextLabel
 
 ## Players who report an age under this are flagged as a child session.
 const AGE_THRESHOLD_YEARS: int = 16
@@ -41,6 +43,7 @@ func _ready() -> void:
 	# Age gate goes first; nothing else shows until the child flag is known.
 	policies_label.meta_clicked.connect(_open_link)
 	child_notice_label.meta_clicked.connect(_open_link)
+	analytics_label.meta_clicked.connect(_open_link)
 	_load_config_file()
 	if !AdManager.age_verified:
 		_show_age_gate()
@@ -48,8 +51,9 @@ func _ready() -> void:
 	if !policies_accepted:
 		_show_policy_step()
 		return
-	# Fire app-opened every launch for non-child returning users only.
-	if !AdManager.is_child:
+	# Only ever fires for a player who opted in; analytics are off by default
+	# and stay off until they say otherwise.
+	if PostHog.enabled:
 		PostHog.capture_app_loaded()
 	_transition_in()
 
@@ -57,6 +61,7 @@ func _ready() -> void:
 func _transition_in() -> void:
 	policies_container.call_deferred("set_visible", false)
 	age_gate_container.call_deferred("set_visible", false)
+	analytics_container.call_deferred("set_visible", false)
 	splashes_container.call_deferred("set_visible", true)
 	accept_input = true
 	splashes = splashes_container.get_children()
@@ -109,14 +114,29 @@ func _on_go_to_main_delay_timeout() -> void:
 func _open_link(meta: Variant) -> void:
 	OS.shell_open(meta)
 
-## Accept-policies handler for the non-child path.
+## Accept-policies handler for the non-child path; hands off to the analytics
+## opt-in rather than going straight to the splashes.
 func _on_continue_pressed() -> void:
 	policies_accepted = true
 	var _err: Error = config.load(config_path)
 	config.set_value("policies", "has_accepted_policies", true)
 	config.save(config_path)
 	PlatformServices.cloud_save_config()
+	_show_analytics_step()
+
+## Children never see the analytics prompt — analytics stay off for them.
+func _show_analytics_step() -> void:
+	policies_container.call_deferred("set_visible", false)
+	child_notice_container.call_deferred("set_visible", false)
+	analytics_container.call_deferred("set_visible", true)
+
+func _on_analytics_opt_in_pressed() -> void:
+	PostHog.enable()
 	PostHog.capture_app_loaded()
+	_transition_in()
+
+func _on_analytics_opt_out_pressed() -> void:
+	PostHog.disable()
 	_transition_in()
 
 func _show_age_gate() -> void:

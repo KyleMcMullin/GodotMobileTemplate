@@ -6,3 +6,6 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
 		get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 		get_tree().quit()
+
+func _on_settings_pressed() -> void:
+	ScreenSwitcher.switch_screen_transition(ScreenSwitcher.SCREEN.SETTINGS)

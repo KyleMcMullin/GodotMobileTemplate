@@ -25,4 +25,11 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Main Menu"
 
+[node name="SettingsButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 56)
+text = "Settings"
+
 [node name="DirectionalSwipe" parent="." instance=ExtResource("1_28mqs")]
+
+[connection signal="pressed" from="VBoxContainer/SettingsButton" to="." method="_on_settings_pressed"]

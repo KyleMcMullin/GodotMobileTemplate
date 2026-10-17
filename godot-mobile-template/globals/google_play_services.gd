@@ -24,19 +24,24 @@ var is_user_authenticated: bool = false
 var saved_snapshot_ids: Dictionary = {}
 
 func _enter_tree() -> void:
-	if PlatformServices.is_android():
-		GodotPlayGameServices.initialize()
-	else:
+	if not PlatformServices.is_android():
 		queue_free()
 	
 func _ready() -> void:
+	if not PlatformServices.is_android():
+		return
 	google_play_authenticated.connect(PlatformServices.signed_in_success)
 	## Connect the saves_loaded signal to wherever uses the data you need it to
 	#saves_loaded.connect()
-	if not GodotPlayGameServices.android_plugin:
-		print("GodotPlayGameServices not found")
+	if _initialize_if_allowed():
+		play_games_sign_in_client.is_authenticated()
 
-	play_games_sign_in_client.is_authenticated()
+func _initialize_if_allowed() -> bool:
+	if AdManager.is_child or not AdManager.age_verified:
+		return false
+	if not GodotPlayGameServices.android_plugin:
+		GodotPlayGameServices.initialize()
+	return GodotPlayGameServices.android_plugin != null
 
 func _on_user_authenticated(is_authenticated: bool) -> void:
 	is_user_authenticated = is_authenticated
@@ -46,7 +51,8 @@ func _on_user_authenticated(is_authenticated: bool) -> void:
 		play_games_snapshots_client.load_snapshots(true)
 
 func sign_in() -> void:
-	play_games_sign_in_client.sign_in()
+	if _initialize_if_allowed():
+		play_games_sign_in_client.sign_in()
 	
 func show_achievements() -> void:
 	play_games_achievements_client.show_achievements()
@@ -63,19 +69,25 @@ func increment_achievement(achievement: PlatformServices.ACHIEVEMENT, value: int
 
 # This saves the config file from the snapshot, then reloads all the important areas that use it
 func _update_config_from_snapshot(snapshot: PlayGamesSnapshot) -> void:
-	var _err: Error = config.load(config_path)
-	config.clear()
-	config.parse(snapshot.content.get_string_from_utf8())
+	# Preferences may roam; consent, age and purchase entitlements stay local.
+	var restored: ConfigFile = ConfigFile.new()
+	if restored.parse(snapshot.content.get_string_from_utf8()) != OK:
+		return
+	config.load(config_path)
+	for key: String in restored.get_section_keys("audio") if restored.has_section("audio") else PackedStringArray():
+		config.set_value("audio", key, restored.get_value("audio", key))
 	config.save(config_path)
-	PostHog._load_config_file()
 	AudioManager._load_config_file()
-	AdManager._load_config_file()
 	
 	
 func cloud_save_config() -> void:
-	if !is_user_authenticated: return
+	if !is_user_authenticated or AdManager.is_child: return
 	var _err: Error = config.load(config_path)
-	var content: PackedByteArray = config.encode_to_text().to_utf8_buffer()
+	var preferences: ConfigFile = ConfigFile.new()
+	if config.has_section("audio"):
+		for key: String in config.get_section_keys("audio"):
+			preferences.set_value("audio", key, config.get_value("audio", key))
+	var content: PackedByteArray = preferences.encode_to_text().to_utf8_buffer()
 	play_games_snapshots_client.save_game("user_config", "user config file", content)
 	
 
@@ -85,9 +97,9 @@ func add_score_to_leaderboard(leaderboard: PlatformServices.LEADERBOARD, number:
 
 func _snapshots_loaded(snapshots: Array[PlayGamesSnapshotMetadata]) -> void:
 	for snapshot: PlayGamesSnapshotMetadata in snapshots:
-		if "colors" in snapshot.unique_name:
+		if snapshot.unique_name == "user_config" or snapshot.unique_name in cloud_paths.values():
 			saved_snapshot_ids.get_or_add(snapshot.snapshot_id, true)
-		play_games_snapshots_client.load_game(snapshot.unique_name)
+			play_games_snapshots_client.load_game(snapshot.unique_name)
 	
 func _load_config_save() -> void:
 	play_games_snapshots_client.load_game("user_config")
@@ -111,7 +123,7 @@ func _conflict_emitted(_conflict: PlayGamesSnapshotConflict) -> void:
 	#play_games_snapshots_client.save_game(cloud_paths[PATH], "data.Type " + str(data) + " save data", raw_data)
 	
 func delete_save_data() -> void:
+	if not is_user_authenticated: return
 	for key: String in saved_snapshot_ids.keys():
-		if "user_config" in key: continue;
-		# Add if statements to manage what data should be deleted
 		play_games_snapshots_client.delete_snapshot(key)
+	saved_snapshot_ids.clear()

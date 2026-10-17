@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 signal on_fade_out_finised
+signal transition_finished
 
 @export
 var fade_out_time: float = .4
@@ -38,4 +39,5 @@ func _fade_in() -> void:
 	
 func _end_transition() -> void:
 	color_rect.visible = false
+	transition_finished.emit()
 	

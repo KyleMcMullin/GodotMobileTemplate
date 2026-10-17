@@ -15,7 +15,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="GodotMobileTemplate"
-run/main_scene="uid://geod0rub7qhm"
+config/version="1.0.0"
+run/main_scene="res://menus/screens/splash_screen.tscn"
 config/use_custom_user_dir=true
 config/quit_on_go_back=false
 config/features=PackedStringArray("4.7", "Mobile")
@@ -26,7 +27,7 @@ config/icon="res://icon.svg"
 
 [audio]
 
-buses/default_bus_layout="uid://bvo848hrj8ukn"
+buses/default_bus_layout="res://audio/main_audio_bus_layout.tres"
 
 [autoload]
 

@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://81khircurrio"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ev86v"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vm6at"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1t0uo"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mrh8c"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mlxro"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ycrak"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ypt8e"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_eox7i"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i5k7j"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_l728t"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2rvca"]
+
+[node name="MaskedButton" type="Button" unique_id=56022823]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -4.0
+offset_top = -4.0
+offset_right = 4.0
+offset_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ev86v")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxEmpty_vm6at")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_1t0uo")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_mrh8c")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_mlxro")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_ycrak")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_ypt8e")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_eox7i")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_i5k7j")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_l728t")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_2rvca")

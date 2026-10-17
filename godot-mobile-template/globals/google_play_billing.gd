@@ -8,7 +8,10 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	if not PlatformServices.is_android():
+		return
 	billing_client = BillingClient.new()
+	add_child(billing_client)
 	billing_client.connected.connect(_on_connected) # No params
 	billing_client.disconnected.connect(_on_disconnected) # No params
 	billing_client.connect_error.connect(_on_connect_error) # response_code: int, debug_message: String

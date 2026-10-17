@@ -40,6 +40,8 @@ var transition_started: bool = false
 
 
 func _ready() -> void:
+	for label: RichTextLabel in [policies_label, child_notice_label, analytics_label]:
+		label.text = label.text.replace("https://example.com/privacy", AppConfig.PRIVACY_POLICY_URL).replace("https://example.com/terms", AppConfig.TERMS_URL)
 	# Age gate goes first; nothing else shows until the child flag is known.
 	policies_label.meta_clicked.connect(_open_link)
 	child_notice_label.meta_clicked.connect(_open_link)
@@ -50,6 +52,9 @@ func _ready() -> void:
 		return
 	if !policies_accepted:
 		_show_policy_step()
+		return
+	if !AdManager.is_child and !PostHog.consent_answered:
+		_show_analytics_step()
 		return
 	# Only ever fires for a player who opted in; analytics are off by default
 	# and stay off until they say otherwise.
@@ -126,6 +131,11 @@ func _on_continue_pressed() -> void:
 
 ## Children never see the analytics prompt — analytics stay off for them.
 func _show_analytics_step() -> void:
+	if AdManager.is_child:
+		PostHog.disable()
+		_transition_in()
+		return
+	age_gate_container.visible = false
 	policies_container.call_deferred("set_visible", false)
 	child_notice_container.call_deferred("set_visible", false)
 	analytics_container.call_deferred("set_visible", true)
@@ -146,6 +156,7 @@ func _show_age_gate() -> void:
 
 ## Strips any non-digit character as it's typed/pasted.
 func _on_age_input_text_changed(new_text: String) -> void:
+	invalid_age_label.visible = false
 	var digits_only: String = ""
 	for character: String in new_text:
 		if character.is_valid_int():
@@ -157,7 +168,7 @@ func _on_age_input_text_changed(new_text: String) -> void:
 ## Validates the entered age and flags the session as child/non-child.
 func _on_age_submit_pressed() -> void:
 	var entered: String = age_input.text.strip_edges()
-	if not entered.is_valid_int() or entered.to_int() < 0:
+	if not entered.is_valid_int() or entered.to_int() < 0 or entered.to_int() > 120:
 		invalid_age_label.visible = true
 		return
 	var age: int = entered.to_int()

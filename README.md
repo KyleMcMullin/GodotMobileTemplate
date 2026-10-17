@@ -101,9 +101,13 @@ When ready to ship:
 
 1. Complete [godot-ci's account and signing setup](https://github.com/KyleMcMullin/godot-ci/blob/main/SETUP.md).
 2. Generate real Android/iOS export presets. Set the package/bundle identifiers,
-   Apple team, preset names and project path in `.github/workflows/ci.yml`.
-3. Add the secrets listed in [godot-ci](https://github.com/KyleMcMullin/godot-ci).
-4. Set the repository variable `ENABLE_ANDROID_DEPLOYMENT` and/or
+   Apple team, preset names and project path in `.github/workflows/release.yml.example`.
+3. Make the shared `godot-ci` workflow accessible to your game repository, then
+   rename `.github/workflows/release.yml.example` to `release.yml`. A private
+   reusable workflow can fail GitHub validation even when its job is disabled;
+   the template's default CI has no dependency on that repository.
+4. Add the secrets listed in [godot-ci](https://github.com/KyleMcMullin/godot-ci).
+5. Set the repository variable `ENABLE_ANDROID_DEPLOYMENT` and/or
    `ENABLE_IOS_DEPLOYMENT` to the string `true` only for configured platforms.
 
 The optional release job uses the published shared Actions workflow. With a

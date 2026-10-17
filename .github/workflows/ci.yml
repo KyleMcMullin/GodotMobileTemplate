@@ -43,30 +43,3 @@ jobs:
           GODOT_BIN: /home/runner/godot-bin/godot
         run: ./run_tests.sh
 
-  # Enable only in a configured game repository, after completing godot-ci/SETUP.md.
-  # These are repository variables (Settings > Secrets and variables > Actions).
-  # The default template has no store accounts or signing secrets and only runs tests.
-  release:
-    needs: test
-    if: >-
-      github.event_name != 'pull_request' &&
-      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) &&
-      (vars.ENABLE_ANDROID_DEPLOYMENT == 'true' || vars.ENABLE_IOS_DEPLOYMENT == 'true')
-    permissions:
-      contents: write
-    # Uses only inputs accepted by the published shared workflow. The CircleCI
-    # runner/allocation inputs are still unpublished upstream; see README.
-    uses: KyleMcMullin/godot-ci/.github/workflows/godot-ci.yml@main
-    secrets: inherit
-    with:
-      godot-version: '4.7.1'
-      project-path: 'godot-mobile-template'
-      android-preset-name: 'Android'
-      ios-preset-name: 'iOS'
-      # CHANGE ME: match the export presets and registered store listings.
-      android-package-name: 'com.example.mygame'
-      ios-bundle-id: 'com.example.mygame'
-      ios-team-id: ''
-      enable-android: ${{ vars.ENABLE_ANDROID_DEPLOYMENT == 'true' }}
-      enable-ios: ${{ vars.ENABLE_IOS_DEPLOYMENT == 'true' }}
-      deploy: true

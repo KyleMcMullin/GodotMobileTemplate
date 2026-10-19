@@ -67,7 +67,7 @@ def main():
         if (clone / "addons/gdUnit4").is_dir():
             targets = sys.argv[1:] or ["res://tests/unit"]
             arguments = ["--script", "res://addons/gdUnit4/bin/GdUnitCmdTool.gd",
-                         "--", "--ignoreHeadlessMode"]
+                         "--ignoreHeadlessMode"]
             for target in targets:
                 arguments += ["--add", target]
             run(arguments, timeout=600)

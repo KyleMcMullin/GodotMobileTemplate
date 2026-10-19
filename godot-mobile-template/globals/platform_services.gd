@@ -81,7 +81,7 @@ func add_score_to_leaderboard(leaderboard: LEADERBOARD, number: int) -> void:
 		
 func show_leaderboard() -> void:
 	if platform == PLATFORM.ANDROID:
-		GooglePlayServices.show_leaderboard()
+		GooglePlayServices.show_leaderboards()
 		
 func increment_achievement(achievement: ACHIEVEMENT, value: int = 1) -> void:
 	if platform == PLATFORM.ANDROID:
@@ -90,7 +90,7 @@ func increment_achievement(achievement: ACHIEVEMENT, value: int = 1) -> void:
 	
 		
 func cloud_save_config() -> void:
-	if platform == PLATFORM.ANDROID:
+	if not AdManager.is_child and platform == PLATFORM.ANDROID:
 		GooglePlayServices.cloud_save_config()
 
 func delete_save_data() -> void:
@@ -98,19 +98,20 @@ func delete_save_data() -> void:
 		GooglePlayServices.delete_save_data()
 
 func signed_in_success() -> void:
-	signed_in.emit()
 	if platform == PLATFORM.ANDROID:
 		is_user_authenticated = GooglePlayServices.is_user_authenticated
 	else:
 		is_user_authenticated = false
+	signed_in.emit()
 
 func purchase(item: PURCHASE) -> void:
 	if platform == PLATFORM.ANDROID:
 		GooglePlayBilling.purchase(PURCHASE_STRINGS[item])
 
-# TODO(coppa): sign_in() isn't guarded for is_child yet - confirm whether
-# Play Games Services/Game Center has a compliant known-child path before adding one.
+## This template only starts account services for age-verified non-child sessions.
 func sign_in() -> void:
+	if AdManager.is_child or not AdManager.age_verified:
+		return
 	if platform == PLATFORM.ANDROID:
 		GooglePlayServices.sign_in()
 		

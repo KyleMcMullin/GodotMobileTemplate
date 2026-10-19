@@ -28,6 +28,8 @@ var play_music: bool = true
 
 # Assumption that we will only play one song at a time, and thus only need one audiostreamplayer
 var music_stream_player: AudioStreamPlayer = AudioStreamPlayer.new()
+var _music_tween: Tween
+var _song_request_id: int = 0
 
 func _ready() -> void:
 	_load_config_file()
@@ -41,7 +43,7 @@ func _ready() -> void:
 ## Creates a sound effect with the option for random pitch and custom random pitch min/max
 ## Begins playing the sound and connects a signal to delete the player once it finishes
 func create_sound_fx(sound: SFX, random_pitch: bool = false, custom_rand_pitch_min: float = 0.0, custom_rand_pitch_max: float = 0.0) -> void:
-	if !play_sound or !play_sfx: return
+	if !play_sound or !play_sfx or not SFX_ASSETS.has(sound): return
 	var fx_stream_player: AudioStreamPlayer = AudioStreamPlayer.new()
 	add_child(fx_stream_player)
 	fx_stream_player.bus = "FX"
@@ -60,36 +62,43 @@ func remove_fx_player(player: AudioStreamPlayer) -> void:
 
 ## Fades in selected song over period of time
 func fade_in_song(song: SONG, fade_in_time: float) -> void:
+	if not SONG_ASSETS.has(song): return
+	_song_request_id += 1
+	if _music_tween:
+		_music_tween.kill()
+	music_stream_player.volume_db = -75.0
 	music_stream_player.stream = SONG_ASSETS[song]
 	music_stream_player.play()
 	if !play_music or !play_sound: return
 	
-	var tween: Tween = create_tween()
-	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.set_trans(Tween.TRANS_SINE)
-	tween.tween_property(music_stream_player, "volume_db", 0, fade_in_time)
+	_set_music_volume(0.0, fade_in_time)
 	
 ## Fades in the currently playing song (a song can be playing with no volume)
 func fade_in_continue_playing(fade_in_time: float) -> void:
 	if !play_music or !play_sound: return
-	var tween: Tween = create_tween()
-	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.set_trans(Tween.TRANS_SINE)
-	tween.tween_property(music_stream_player, "volume_db", 0, fade_in_time)
+	_set_music_volume(0.0, fade_in_time)
 	
 ## Fades out the currently playing song (does not stop it from playing, just turns the volume down)
 func fade_out_song(fade_out_time: float) -> void:
-	var tween: Tween = create_tween()
-	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.set_trans(Tween.TRANS_SINE)
-	tween.tween_property(music_stream_player, "volume_db", -75, fade_out_time)
-	tween.finished.connect(fade_out_done.emit)
+	_set_music_volume(-75.0, fade_out_time)
+	_music_tween.finished.connect(fade_out_done.emit)
+
+func _set_music_volume(volume: float, duration: float) -> void:
+	if _music_tween:
+		_music_tween.kill()
+	_music_tween = create_tween()
+	_music_tween.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_music_tween.tween_property(music_stream_player, "volume_db", volume, duration)
 	
 ## Fades out the current song and in the new song provided
 func cross_fade(song: SONG, fade_out_time: float, fade_in_time: float) -> void:
+	_song_request_id += 1
+	var request_id: int = _song_request_id
 	fade_out_song(fade_out_time)
-	await fade_out_done
-	fade_in_song(song, fade_in_time)
+	# A mute toggle can cancel the volume tween; do not strand the song change.
+	await get_tree().create_timer(maxf(fade_out_time, 0.0)).timeout
+	if request_id == _song_request_id:
+		fade_in_song(song, fade_in_time)
 	
 ## Adjusts whether sound should be muted
 ## Auto captures for PostHog
@@ -101,6 +110,8 @@ func adjust_sound_mute(new_play_sound: bool) -> void:
 	play_sound = new_play_sound
 	if !play_sound:
 		fade_out_song(.5)
+	else:
+		fade_in_continue_playing(.5)
 	_save_config_file()
 	
 ## Adjusts whether music should be muted
@@ -113,6 +124,8 @@ func adjust_music_mute(new_play_music: bool) -> void:
 	play_music = new_play_music
 	if !play_music:
 		fade_out_song(.5)
+	else:
+		fade_in_continue_playing(.5)
 	_save_config_file()
 	
 ## Adjusts whether sfx should be muted

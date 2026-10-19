@@ -1,120 +1,205 @@
 # GodotMobileTemplate
 
-## LAST UPDATED: 08/03/2026 - Godot v4.7.1
+Mobile starter for **Godot 4.7.1**, with portrait menus, mobile services and checks
+that run on a fresh checkout. Updated October 19, 2026.
 
-Bundled plugin versions: AdMob v5.0.0, Play Billing 3.3.0, Play Games Services 3.4.0.
+Bundled plugins: AdMob 5.1.0, Google Play Billing 3.3.0, Play Games Services 3.4.0,
+and a locally adapted Godot PostHog Analytics integration. Plugin licenses live
+in their addon directories.
 
-> **This repo must be marked as a Template repository** in Settings → General →
-> check "Template repository", or the "Use this template" button will not appear.
+## Start a new game
 
-A template designed to make starting mobile games with Godot much easier. This template provides several utils and helpful starter things to minimize initial setup and avoid spending time writing boiler plate code.
+1. Choose **Use this template** on GitHub. Open
+   `godot-mobile-template/project.godot` in Godot 4.7.1.
+2. Change the project name, icon and version in Project Settings. A unique name
+   also gives the game its own `user://` directory.
+3. Set the privacy-policy and terms links in `globals/app_config.gd`. The splash
+   screen and Privacy screen share those values. Replace the sample policy text,
+   company splash and credits with your game's content.
+4. Add screens to `ScreenSwitcher.SCREEN` and `SCREEN_PATHS`; register music,
+   effects, purchases, achievements, leaderboard IDs and rewarded placements in
+   their managers as needed. The dictionaries intentionally start empty.
+5. Run `./run_tests.sh` from the repository root. No test addon is required.
+6. Configure real export presets through **Project → Export** before exporting.
+   The committed `export_presets.cfg` is an annotated placeholder.
 
-Key features:
+The repository is already marked as a GitHub template. Keep that setting enabled
+under **Settings → General → Template repository**.
 
-- Prompting for T&C/Policies, saving acceptance to user config
-- Customizable splash screen with Godot Logo
-- Audio Manager supporting SFX and Music, Muting/Unmuting Sound/FX/Music separately and saving that to persist on app close
-- SceneSwitcher that allows for easy screen switching/registration. Supports a TransitionScreen that defaults to fade in/out but can be customized
-- AdManager util that sets up everything needed to server ads using Poing Godot AdMob plugin including UMP. Includes default setup for adding ad free
-- GooglePlayBilling util that sets up/gives examples for purchase on the Google Play Store
-- GooglePlayServices util that sets up/gives examples for GooglePlayServices like signing in, snapshot saving, achievements and leaderboards
-- PlatformServices util that obscures generalizes functionality for multiple platforms to support android and IOS. Basically takes function calls and routes them to the correct services
-- Adjust project settings for mobile including turning off quit on go back, emulating mouse/touch from each other, viewport width/height, portrait mode, stretch resizability, HDR 2D, and a few other helpful things for mobile
-- Includes PostHog implementation for analytics that is hooked up to many areas of the app already. By default uses anonymous events and saves device/OS info. Can be enabled or disabled.
-- DirectionalSwipe util that gives left/right/up/down swipes in a way that feels natural
+## Included
 
-While this example lays the foundation for resizability, it will not handle all of that on its own. Control nodes should be quite easy but anything beyond that may require additional development/configuration to get working correctly, check out the Godot docs for that.
+- Age-group entry, policy acceptance, optional analytics consent and splash sequence.
+  An interrupted analytics prompt is shown on the next launch. Child sessions
+  cannot enable analytics or explicitly sign in through PlatformServices.
+- Main Menu → Settings → Privacy, analytics preferences, data-deletion confirmation
+  and Credits. Menus use scroll containers and 56-unit button heights.
+- Persistent master sound, music and effects switches; music resumes when enabled.
+- `ScreenSwitcher` with history, Android back navigation and a fade transition.
+  Root screens clear history; repeated taps are blocked through the full reveal.
+- Rewarded-ad callbacks with duplicate-load protection and an unavailable signal.
+  A reward runs once, after earning it. Desktop/development and purchased ad-free
+  sessions bypass inventory for local development.
+- AdMob UMP consent flow, including `NOT_REQUIRED`, cached consent after an update
+  error, and the privacy-options form. Dismissing a form does not repeatedly reopen it.
+- Optional PostHog events: no identifier before opt-in, random UUIDs, IP-discard
+  event property, bounded request timeouts and request-node cleanup. An empty API
+  key sends nothing. Child sessions override any restored analytics preference.
+- Google Play billing and games-service scaffolding. Cloud config sync includes
+  **audio preferences only**; age, consent and purchase flags stay local.
+- Portrait 506 × 900 viewport with expanding canvas, touch emulation,
+  `DirectionalSwipe`, and `menus/components/masked_button.tscn` for an invisible
+  tap target over separately drawn UI.
 
-## CI/CD — starting a new game
+These are working starter screens, not a complete game. Add your own gameplay,
+FTUE, accessibility options, safe-area treatment, pause/save lifecycle and visual
+design according to the new game's needs.
 
-Every game made from this template is born with a working build pipeline. The
-pipeline logic itself is **not** in this repo — it lives in
-[**godot-ci**](https://github.com/KyleMcMullin/godot-ci) and is referenced live by
-`.github/workflows/ci.yml`. "Use this template" copies files once with no link back,
-so anything copied here would go stale immediately; keeping the logic in `godot-ci`
-means a fix there applies to every game, including ones created long ago.
+## What came back from the games
 
-### Steps
+This revision compares Layers, Tic Tac Glow and HueBlend. It brings back the
+common settings/privacy/credits flows, interrupted-consent handling, analytics
+UUID and IP settings, rewarded-ad guards, music unmute behavior and navigation
+transition locking. It also fixes template-specific startup and data-wipe bugs.
 
-1. Click **Use this template** → create your repo.
-2. Edit `.github/workflows/ci.yml`: set `android-package-name`, `ios-bundle-id`,
-   `ios-team-id`, and the preset names.
-3. Open the project in Godot and regenerate `export_presets.cfg`
-   (Project → Export). The committed one is an annotated placeholder, not a working
-   config — read its header.
-4. Add the repo secrets listed in
-   [godot-ci's README](https://github.com/KyleMcMullin/godot-ci#secrets).
-5. Open a PR to check the plumbing — PRs run tests only — then push to `main`.
+Game-specific stats, player profiles, idle economy, tutorials, art and paywalls
+remain in their games. HueBlend's RevenueCat integration is an option for a game
+that needs cross-platform purchases; it is not a dependency of this template.
 
-If your game uses AdMob, also read [AdMob binaries and CI](#admob-binaries-and-ci)
-below — the plugin's native binaries are gitignored by default and CI cannot fetch
-them.
+## Tests
 
-### What runs when
-
-| Trigger | Result |
-|---|---|
-| Pull request | Tests only. Never exports, never deploys. |
-| Push to `main` | Test → export → Play **internal** track + **TestFlight**. |
-| Push tag `v*` | Test → export → Play **production** + **App Store review**. |
-
-`enable-ios` ships as `false`. Leave it that way until Apple enrollment and signing
-are done, or every push to `main` will fail on the iOS job.
-
-### Tests
-
-Testing uses **gdUnit4**. `./run_tests.sh` at the repo root runs the suite, and CI
-runs that same script — so local and CI results always agree.
+Requires Godot 4.7.1 and Python 3. The runner finds `godot` on PATH or the standard
+macOS app; set `GODOT_BIN` for another location.
 
 ```bash
-./run_tests.sh                    # whole suite
-./run_tests.sh res://tests/unit   # a subset
+./run_tests.sh
+GODOT_BIN=/path/to/godot ./run_tests.sh
 ```
 
-gdUnit4 is not bundled with this template. Until you install it (Godot → AssetLib →
-"gdUnit4") and add a `tests/` folder, the script skips and CI stays green. The script
-stashes your real `user://` save data before running and restores it afterwards, so
-tests never clobber your local game state.
+Every run imports a fresh copy of the project and checks startup, child analytics
+blocking, deletion preserving only purchase/age flags, audio unmute, screen
+loading, back history and rapid transition taps. Runtime/resource errors fail
+checks even when Godot exits with status zero.
 
-**Before any deploy can work**, you need store accounts, a keystore, API keys and app
-listings. That is a one-time, multi-day process (Apple enrolment alone takes 24–48h).
-Work through
-[godot-ci/SETUP.md](https://github.com/KyleMcMullin/godot-ci/blob/main/SETUP.md).
+Tests use a unique temporary save directory, verify its location before test
+writes, and remove it afterwards. They do not move, overwrite or delete real
+save data. The editor import may update Godot's normal editor settings.
 
-For the full pipeline explanation, inputs, secrets table, and known first-run rough
-edges, see [godot-ci's README](https://github.com/KyleMcMullin/godot-ci#readme).
+For game-specific tests, optionally install gdUnit4 and put suites in
+`tests/unit/`. They run after the template checks:
 
-## IMPORTANT NOTES
+```bash
+./run_tests.sh res://tests/unit
+```
 
-Anything in the addons folder comes from plugins that have their own licenses. Depending on the last time this template was updated, implementations may have changed drastically. When loading up the project for the first time I highly suggest viewing each plugin's documentation for any changes, as well as to get the latest version with any improvements. THESE WILL ALL HAVE ADDITIONAL SETUP TO DO. This may be things like setting up accounts and connecting IDs to the plugins. I will list them here with links
+## CI and deployment
 
-- [Godot AdMob Plugin](https://github.com/poingstudios/godot-admob-plugin)
-- [Godot Play Game Services](https://github.com/godot-sdk-integrations/godot-play-game-services)
-- [Godot PostHog Analytics](https://github.com/dudasaus/godot-posthog-analytics)
-- [Godot Google Play Billing](https://github.com/godot-sdk-integrations/godot-google-play-billing)
+GitHub Actions runs the same fresh-import and regression checks on pushes and
+pull requests. **Deployment is off by default**, so a new template-derived repo
+can pass checks without store accounts, signing keys or CircleCI.
 
-Key elements that will need to be done for plugins to work. This list is not exhaustive, again, read the documentation, please
+When ready to ship:
 
-- Setup auth for Google Play Services following instructions on GitHub
-- Put your Game ID in **Project → Export → Android → `godot_play_game_services/game_id`**. Play Games Services dropped its bottom-panel editor dock in 3.3.0, so this is no longer set from a tab.
-- Create a PostHog app and copy your api key into posthog.json
-- Create an admob account and set your App ID in **Project Settings → `admob/general/android/app_id`** (and `admob/general/ios/app_id` for iOS). Both default to Google's test IDs, so practice with test ads first — but a real ID is required before shipping.
-- Download the AdMob native binaries via the editor: **AdMob → Android → Download & Install** (and the iOS submenu if you ship iOS). See the note below about committing them.
-- Install android build templates/binaries/everything needed to export
-- Create app on google play console and do any necessary setup there for billing like adding your purchase options
-- Add leaderboards/achievements in google play console
+1. Complete [godot-ci's account and signing setup](https://github.com/KyleMcMullin/godot-ci/blob/main/SETUP.md).
+2. Generate real Android/iOS export presets. Set the package/bundle identifiers,
+   Apple team, preset names and project path in `.github/workflows/release.yml.example`.
+3. Make the shared `godot-ci` workflow accessible to your game repository, then
+   rename `.github/workflows/release.yml.example` to `release.yml`. A private
+   reusable workflow can fail GitHub validation even when its job is disabled;
+   the template's default CI has no dependency on that repository.
+4. Add the secrets listed in [godot-ci](https://github.com/KyleMcMullin/godot-ci).
+5. Set the repository variable `ENABLE_ANDROID_DEPLOYMENT` and/or
+   `ENABLE_IOS_DEPLOYMENT` to the string `true` only for configured platforms.
 
-### AdMob binaries and CI
+The optional release job uses the published shared Actions workflow. With a
+platform enabled, `main` deploys to Play internal/TestFlight and `v*` tags deploy
+to Play production/App Store review. Pull requests never deploy. The shared
+workflow is referenced at `main`; pin both its `uses` ref and `godot-ci-ref` input
+to a tested revision before relying on it for releases.
 
-The AdMob plugin ships its own `addons/admob/android/.gitignore` containing `/bin`,
-so the native binaries it downloads are **not** committed. A fresh clone of this
-repo has none, and CI does not download them — the Android export then builds
-without the AdMob plugin and logs `... doesn't exists, please check your
-addons/admob/android/bin folder`.
+**The local CircleCI split is not published upstream.** `.circleci/config.example.yml`
+is retained as an inactive starting point (copy it to `config.yml` only after
+finishing the upstream setup). The published reusable workflow does
+not accept `android-runner`, `ios-runner` or `circleci-project-slug`; this caller
+therefore does not pass them. Publish and validate that shared workflow and orb
+before activating CircleCI or platform-specific release tags.
 
-If you want AdMob in CI-produced builds, remove the `/bin` line from
-`addons/admob/android/.gitignore` and commit the binaries (same for
-`addons/admob/ios/.gitignore`). Otherwise disable AdMob in Project Settings so the
-export stops looking for them.
+`version.json` is starter metadata, not an active build allocator. Keep its
+marketing version aligned with `application/config/version` and the export
+presets. The currently published workflow bumps Android's `version/code`; iOS
+build numbers still need to be set before release. Do not assume the unpublished
+split-runner allocation scripts run here.
 
-Godot Splash Screen Image comes from [KenneyNL Godot-SplasheScreens](https://github.com/KenneyNL/Godot-SplashScreens/tree/main)
+## Configure mobile integrations
+
+- **AdMob:** set your app IDs in Project Settings under
+  `admob/general/android/app_id` and `admob/general/ios/app_id`. Download native
+  binaries using **AdMob → Android/iOS → Download & Install**. Their addon-local
+  `.gitignore` files exclude `bin/`; commit the required binaries explicitly or
+  supply them in your build pipeline. Otherwise disable the integration for export.
+  Add real rewarded-unit IDs to `AdManager.REWARDED_AD_UNIT_IDS`; connect
+  `rewarded_ad_unavailable` to the relevant user feedback.
+- **Play Games:** follow the plugin's authentication setup and put the Game ID in
+  **Project → Export → Android → godot_play_game_services/game_id**. Register
+  achievements, leaderboards and game-specific cloud snapshot names. iOS Game
+  Center is not implemented by this template.
+- **Purchases:** register products in the store and implement entitlement handling
+  in `GooglePlayBilling`. Its purchase handlers are examples, not a finished
+  purchase-verification system. iOS purchases require a separate integration.
+- **PostHog:** put a project API key and ingestion URL in `posthog.json` if used.
+  Analytics remain optional and empty credentials send no events.
+- **Deletion:** the template clears its config and analytics identifier while
+  preserving the local purchase and age-group flags. Connect
+  `AdManager.user_data_deleting` to clear game-specific files and in-memory state.
+  Deletion of known cloud snapshots is requested when authenticated; the bundled
+  plugin provides no deletion-completion signal, so server completion is not
+  verified. Deleting the local identifier does not erase events already held by
+  an analytics provider; implement that provider-side process if needed.
+
+The age threshold and parental math component are starter behavior; choose the
+appropriate product policy and replace sample text before release.
+
+Plugin documentation:
+[AdMob](https://github.com/poingstudios/godot-admob-plugin),
+[Play Games](https://github.com/godot-sdk-integrations/godot-play-game-services),
+[Play Billing](https://github.com/godot-sdk-integrations/godot-google-play-billing),
+[PostHog](https://github.com/dudasaus/godot-posthog-analytics).
+Godot splash artwork: [Kenney](https://github.com/KenneyNL/Godot-SplashScreens).
+
+## Plugin audit — October 19, 2026
+
+Compared official release archives with the installed scripts and native packages.
+
+| Project | AdMob | Play Billing | Play Games | Other plugins |
+|---|---|---|---|---|
+| Template | 5.1.0 (from 5.0.0) | 3.3.0, current | 3.4.0, current | Locally maintained PostHog |
+| Layers | 5.1.0 (from 5.0.0) | 3.3.0, current | 3.4.0, current | Locally maintained PostHog |
+| Tic Tac Glow | 5.1.0, already current | 3.3.0 (from 3.1) | 3.4.0 (from 3.2.0) | Locally maintained PostHog |
+| HueBlend | 5.1.0 (from 5.0.0) | RevenueCat owns billing | 3.4.0 (from 3.0.0) | RevenueCat 2.6.0 (from 2.4.0), gdUnit4 6.2.2 (from 6.2.0) |
+
+The local AdMob Android/iOS packages were updated together with the editor plugin;
+they remain subject to each project's existing ignore rules. AdMob 5.1 fixes R8
+class stripping, prebuilt exports and iOS callback handling, and requires iOS 15+.
+The template's placeholder iOS preset now reflects that requirement.
+
+Play Games 3.3+ moves the Game ID from the removed editor dock to the Android
+export option `godot_play_game_services/game_id`. Set a real ID before exporting
+Tic Tac Glow or HueBlend. The release's GDScript wrappers also need explicit
+`Array`/`Dictionary` result types for a first Linux import; that small local patch
+is applied consistently across the active projects. Its native deletion signal
+is not exposed by the bundled GDScript wrapper, so deletion completion is still
+not asserted by this template.
+
+HueBlend's review addon reports version 5.0. Its upstream Android release is 4.0
+and the unified-addon repository has only v1/v2 tags; it was left intact rather
+than replaced with an older interface. PostHog copies contain local consent and
+request-lifecycle changes and are maintained locally rather than overwritten.
+
+`TicTacGlowtotype` is an older prototype snapshot (AdMob 3.1.3, Billing 3.1,
+Play Games 3.2.0); it is not used as the new-project baseline. A future revival
+needs an AdMob major-version migration. TextComposer has no bundled plugins.
+
+Release references: [AdMob 5.1.0](https://github.com/poingstudios/godot-admob-plugin/releases/tag/v5.1.0),
+[Play Billing 3.3.0](https://github.com/godot-sdk-integrations/godot-google-play-billing/releases/tag/3.3.0),
+[Play Games 3.4.0](https://github.com/godot-sdk-integrations/godot-play-game-services/releases/tag/v3.4.0),
+[RevenueCat 2.6.0](https://github.com/godot-x/revenuecat/releases/tag/2.6.0),
+[gdUnit4 6.2.2](https://github.com/godot-gdunit-labs/gdUnit4/releases/tag/v6.2.2).

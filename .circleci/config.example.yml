@@ -1,0 +1,120 @@
+# OPTIONAL / INACTIVE: retained split-runner configuration.
+# The published godot-ci workflow does not yet accept android-runner, ios-runner
+# or circleci-project-slug. Do not enable this project until that upstream work
+# and the referenced orb are published and validated. GitHub Actions is the
+# working default; see .github/workflows/ci.yml.
+#
+# Thin caller. All pipeline logic lives in the kuision/godot-mobile orb, published from
+# KyleMcMullin/godot-ci - so a fix there applies here on the next run of a matching orb
+# version, with no change to this file.
+#
+# This pipeline is NOT started by pushing. GitHub Actions runs the tests, allocates the
+# build number, records it on main, and only then calls the CircleCI API with the
+# parameters below. That ordering is what makes it impossible to deploy code that has
+# not passed its tests. CircleCI's own push triggers should be turned off for this
+# project in Project Settings > Triggers.
+#
+# Full docs:  https://github.com/KyleMcMullin/godot-ci/blob/main/docs/ci-plan.md
+version: 2.1
+
+setup: false
+
+orbs:
+  # TODO: pin to an exact version once the orb settles, e.g. kuision/godot-mobile@1.0.0.
+  # A volatile tag means an upstream change can break this repo's build without anything
+  # here changing. Pin before you depend on it for releases.
+  godot: kuision/godot-mobile@1
+
+parameters:
+  # Every one of these is supplied by the GitHub Actions trigger. The defaults exist so
+  # that a pipeline started any other way is inert rather than wrong - git-sha empty
+  # means no workflow runs at all (see the `when` guards below).
+  git-sha:
+    description: 'Exact commit GitHub Actions tested and allocated a build number for.'
+    type: string
+    default: ''
+  app-version:
+    description: 'Marketing version from version.json, e.g. 1.4.0.'
+    type: string
+    default: ''
+  build-number:
+    description: 'Allocated build number. Android versionCode and iOS CFBundleVersion.'
+    type: string
+    default: ''
+  platform:
+    description: 'android, ios, or both.'
+    type: string
+    default: 'android'
+  track:
+    description: 'internal (main) or production (release tag).'
+    type: string
+    default: 'internal'
+
+workflows:
+  android:
+    # Two guards. git-sha rules out a pipeline nobody triggered deliberately; platform
+    # rules out an iOS-only tag.
+    when:
+      and:
+        - not:
+            equal: ['', << pipeline.parameters.git-sha >>]
+        - or:
+            - equal: ['android', << pipeline.parameters.platform >>]
+            - equal: ['both', << pipeline.parameters.platform >>]
+    jobs:
+      - godot/export-android:
+          name: Export Android
+          git-sha: << pipeline.parameters.git-sha >>
+          app-version: << pipeline.parameters.app-version >>
+          build-number: << pipeline.parameters.build-number >>
+          context: godot-mobile-release
+          godot-version: '4.7.1'
+          project-path: 'godot-mobile-template'
+          # CHANGE ME: exact preset name= from export_presets.cfg, case-sensitive.
+          preset-name: 'Android'
+          resource-class: 'medium'
+
+      - godot/deploy-android:
+          name: Deploy Android
+          git-sha: << pipeline.parameters.git-sha >>
+          app-version: << pipeline.parameters.app-version >>
+          build-number: << pipeline.parameters.build-number >>
+          context: godot-mobile-release
+          requires: [Export Android]
+          # CHANGE ME: must match the preset AND the Play listing.
+          package-name: 'com.example.mygame'
+          track: << pipeline.parameters.track >>
+
+  # DORMANT until CircleCI macOS is on the plan and the caller flips ios-runner to
+  # circleci in .github/workflows/ci.yml. Left here, wired and complete, so that switch
+  # is a one-word change - but it has never run. Expect to debug it the first time.
+  ios:
+    when:
+      and:
+        - not:
+            equal: ['', << pipeline.parameters.git-sha >>]
+        - or:
+            - equal: ['ios', << pipeline.parameters.platform >>]
+            - equal: ['both', << pipeline.parameters.platform >>]
+    jobs:
+      - godot/export-ios:
+          name: Export iOS
+          git-sha: << pipeline.parameters.git-sha >>
+          app-version: << pipeline.parameters.app-version >>
+          build-number: << pipeline.parameters.build-number >>
+          context: godot-mobile-release
+          godot-version: '4.7.1'
+          project-path: 'godot-mobile-template'
+          preset-name: 'iOS'
+
+      - godot/deploy-ios:
+          name: Deploy iOS
+          git-sha: << pipeline.parameters.git-sha >>
+          app-version: << pipeline.parameters.app-version >>
+          build-number: << pipeline.parameters.build-number >>
+          context: godot-mobile-release
+          requires: [Export iOS]
+          # CHANGE ME: must match the preset AND the App Store listing.
+          bundle-id: 'com.example.mygame'
+          team-id: ''
+          track: << pipeline.parameters.track >>

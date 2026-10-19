@@ -1,20 +1,32 @@
 extends Node
 
 enum SCREEN {
-	MAIN_MENU
+	MAIN_MENU,
+	SPLASH_SCREEN,
+	SETTINGS,
+	PRIVACY,
+	ANALYTICS_CONSENT,
+	DELETE_DATA_CONFIRMATION,
+	CREDITS
 }
 
 const SCREEN_PATHS: Dictionary = {
-	SCREEN.MAIN_MENU: "res://menus/screens/main_menu.tscn"
+	SCREEN.MAIN_MENU: "res://menus/screens/main_menu.tscn",
+	SCREEN.SPLASH_SCREEN: "res://menus/screens/splash_screen.tscn",
+	SCREEN.SETTINGS: "res://menus/screens/settings_menu.tscn",
+	SCREEN.PRIVACY: "res://menus/screens/privacy_screen.tscn",
+	SCREEN.ANALYTICS_CONSENT: "res://menus/screens/analytics_consent.tscn",
+	SCREEN.DELETE_DATA_CONFIRMATION: "res://menus/screens/delete_data_confirmation.tscn",
+	SCREEN.CREDITS: "res://menus/screens/credits_screen.tscn"
 }
 
 ## Screens that reset the back stack, so they are always the bottom of history
-const ROOT_SCREENS: Array[SCREEN] = [SCREEN.MAIN_MENU]
+const ROOT_SCREENS: Array[SCREEN] = [SCREEN.MAIN_MENU, SCREEN.SPLASH_SCREEN]
 
 var current_screen: Control = null
 
 ## Which [enum SCREEN] [member current_screen] is, so back navigation can record it
-var current_screen_id: SCREEN = SCREEN.MAIN_MENU
+var current_screen_id: SCREEN = SCREEN.SPLASH_SCREEN
 
 ## Screens the back stack can return to, most recently left last
 var _history: Array[SCREEN] = []
@@ -23,8 +35,8 @@ var _history: Array[SCREEN] = []
 var _is_switching: bool = false
 
 func _ready() -> void:
-	var root: Window = get_tree().root
-	current_screen = get_tree().root.get_child(root.get_child_count() - 1)
+	# Autoloads enter before the main scene. Resolve it when the first swap runs.
+	current_screen = get_tree().current_scene as Control
 
 ## Switches screens with the transition screen
 ## See menus/components/transition_screen. Defaults to a simple fade in/out
@@ -58,7 +70,7 @@ func _start_back(use_transition: bool) -> void:
 ## Records the jump then defers the swap. [param record_history] is false for back
 ## navigation, which consumes history instead of adding to it
 func _start_switch(screen: SCREEN, record_history: bool, use_transition: bool) -> void:
-	if _is_switching:
+	if _is_switching or (screen == current_screen_id and is_instance_valid(current_screen)):
 		return
 	_is_switching = true
 	if screen in ROOT_SCREENS:
@@ -79,8 +91,13 @@ func _deferred_switch(screen: SCREEN, use_transition: bool) -> void:
 	if use_transition:
 		TransitionScreen.transition()
 		await TransitionScreen.on_fade_out_finised
-	current_screen.free()
+	if not is_instance_valid(current_screen):
+		current_screen = get_tree().current_scene as Control
+	if is_instance_valid(current_screen):
+		current_screen.free()
 	current_screen = new_screen.instantiate()
 	get_tree().root.add_child(current_screen)
 	get_tree().current_scene = current_screen
+	if use_transition:
+		await TransitionScreen.transition_finished
 	_is_switching = false

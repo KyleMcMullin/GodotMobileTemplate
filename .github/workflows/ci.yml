@@ -1,59 +1,45 @@
-# Thin caller. All pipeline logic lives in KyleMcMullin/godot-ci and is referenced
-# live, not copied - so a fix pushed there applies here on the next run, with no
-# change to this file.
-#
-# Full docs:  https://github.com/KyleMcMullin/godot-ci#readme
-# Account setup (do this first): https://github.com/KyleMcMullin/godot-ci/blob/main/SETUP.md
 name: CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: ['**']
     tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  ci:
-    # Required, not optional: export-android auto-bumps version/code and commits it
-    # back to main, since Play rejects a version code it has already accepted. A
-    # called workflow cannot hold more permission than its caller grants, so dropping
-    # this makes every deploy fail at the commit step.
-    permissions:
-      contents: write
+  test:
+    name: Template checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Cache Godot
+        id: godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot-bin
+          key: godot-4.7.1-linux
+      - name: Download Godot
+        if: steps.godot.outputs.cache-hit != 'true'
+        env:
+          GODOT_VERSION: '4.7.1'
+        run: |
+          set -euo pipefail
+          mkdir -p ~/godot-bin
+          curl -fsSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot-bin
+          mv ~/godot-bin/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot-bin/godot
+          chmod +x ~/godot-bin/godot
+      - name: Run fresh import and template regression checks
+        env:
+          GODOT_BIN: /home/runner/godot-bin/godot
+        run: ./run_tests.sh
 
-    # TODO: pin to a tag or SHA once the shared workflow settles, e.g.
-    #   uses: KyleMcMullin/godot-ci/.github/workflows/godot-ci.yml@v1
-    # @main means every run picks up the latest shared logic - convenient while
-    # iterating, but it also means an upstream change can break this repo's build
-    # without anything here changing. Pin before you depend on it for releases.
-    uses: KyleMcMullin/godot-ci/.github/workflows/godot-ci.yml@main
-    secrets: inherit
-    with:
-      # Must match config/features in project.godot.
-      godot-version: '4.7.1'
-
-      # Folder containing project.godot, relative to the repo root.
-      project-path: 'godot-mobile-template'
-
-      # CHANGE ME: exact preset name= from export_presets.cfg, case-sensitive.
-      android-preset-name: 'Android'
-      ios-preset-name: 'iOS'
-
-      # CHANGE ME: must match the preset AND the store listings.
-      android-package-name: 'com.example.mygame'
-      ios-bundle-id: 'com.example.mygame'
-      ios-team-id: ''
-
-      # Leave false until Apple enrolment, match certs and the App Store Connect
-      # key all exist, or every push to main fails on the iOS job.
-      # See SETUP.md steps 2, 5, 6, 7.
-      enable-ios: false
-      enable-android: true
-
-      # The whole trigger policy in one line:
-      #   pull request -> false -> test only, never exports, never deploys
-      #   push to main -> true  -> test, export, deploy to Play internal + TestFlight
-      #   push v* tag  -> true  -> test, export, deploy to Play production + App Store review
-      # The deploy jobs re-check the ref themselves, so a PR cannot ship even if
-      # this expression is edited wrongly.
-      deploy: ${{ github.event_name != 'pull_request' }}

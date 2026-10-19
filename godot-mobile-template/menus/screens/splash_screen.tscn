@@ -308,7 +308,7 @@ layout_mode = 2
 bbcode_enabled = true
 text = "Participate in gameplay analytics?
 
-Gameplay analytics are anonymized events used only to improve the game. You can change this later in Settings. See our [url=https://example.com/privacy]Privacy Policy[/url]."
+Optional gameplay events use a random device identifier to help improve the game. You can change this later in Settings. See our [url=https://example.com/privacy]Privacy Policy[/url]."
 fit_content = true
 autowrap_mode = 2
 horizontal_alignment = 1

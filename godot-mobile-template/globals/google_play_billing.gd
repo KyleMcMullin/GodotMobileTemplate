@@ -71,7 +71,7 @@ func _on_purchase_updated(result: Dictionary) -> void:
 		print("Purchase update error")
 		print("response_code: ", result.response_code, "debug_message: ", result.debug_message)
 	
-func _on_consume_purchase_response() -> void:
+func _on_consume_purchase_response(_result: Dictionary) -> void:
 	pass
 	
 ## After acknowledging the purchase pass it to handle purchase token to grant product

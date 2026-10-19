@@ -1,9 +1,9 @@
 # GodotMobileTemplate
 
 Mobile starter for **Godot 4.7.1**, with portrait menus, mobile services and checks
-that run on a fresh checkout. Updated October 16, 2026.
+that run on a fresh checkout. Updated October 19, 2026.
 
-Bundled plugins: AdMob 5.0.0, Google Play Billing 3.3.0, Play Games Services 3.4.0,
+Bundled plugins: AdMob 5.1.0, Google Play Billing 3.3.0, Play Games Services 3.4.0,
 and a locally adapted Godot PostHog Analytics integration. Plugin licenses live
 in their addon directories.
 
@@ -164,3 +164,42 @@ Plugin documentation:
 [Play Billing](https://github.com/godot-sdk-integrations/godot-google-play-billing),
 [PostHog](https://github.com/dudasaus/godot-posthog-analytics).
 Godot splash artwork: [Kenney](https://github.com/KenneyNL/Godot-SplashScreens).
+
+## Plugin audit — October 19, 2026
+
+Compared official release archives with the installed scripts and native packages.
+
+| Project | AdMob | Play Billing | Play Games | Other plugins |
+|---|---|---|---|---|
+| Template | 5.1.0 (from 5.0.0) | 3.3.0, current | 3.4.0, current | Locally maintained PostHog |
+| Layers | 5.1.0 (from 5.0.0) | 3.3.0, current | 3.4.0, current | Locally maintained PostHog |
+| Tic Tac Glow | 5.1.0, already current | 3.3.0 (from 3.1) | 3.4.0 (from 3.2.0) | Locally maintained PostHog |
+| HueBlend | 5.1.0 (from 5.0.0) | RevenueCat owns billing | 3.4.0 (from 3.0.0) | RevenueCat 2.6.0 (from 2.4.0), gdUnit4 6.2.2 (from 6.2.0) |
+
+The local AdMob Android/iOS packages were updated together with the editor plugin;
+they remain subject to each project's existing ignore rules. AdMob 5.1 fixes R8
+class stripping, prebuilt exports and iOS callback handling, and requires iOS 15+.
+The template's placeholder iOS preset now reflects that requirement.
+
+Play Games 3.3+ moves the Game ID from the removed editor dock to the Android
+export option `godot_play_game_services/game_id`. Set a real ID before exporting
+Tic Tac Glow or HueBlend. The release's GDScript wrappers also need explicit
+`Array`/`Dictionary` result types for a first Linux import; that small local patch
+is applied consistently across the active projects. Its native deletion signal
+is not exposed by the bundled GDScript wrapper, so deletion completion is still
+not asserted by this template.
+
+HueBlend's review addon reports version 5.0. Its upstream Android release is 4.0
+and the unified-addon repository has only v1/v2 tags; it was left intact rather
+than replaced with an older interface. PostHog copies contain local consent and
+request-lifecycle changes and are maintained locally rather than overwritten.
+
+`TicTacGlowtotype` is an older prototype snapshot (AdMob 3.1.3, Billing 3.1,
+Play Games 3.2.0); it is not used as the new-project baseline. A future revival
+needs an AdMob major-version migration. TextComposer has no bundled plugins.
+
+Release references: [AdMob 5.1.0](https://github.com/poingstudios/godot-admob-plugin/releases/tag/v5.1.0),
+[Play Billing 3.3.0](https://github.com/godot-sdk-integrations/godot-google-play-billing/releases/tag/3.3.0),
+[Play Games 3.4.0](https://github.com/godot-sdk-integrations/godot-play-game-services/releases/tag/v3.4.0),
+[RevenueCat 2.6.0](https://github.com/godot-x/revenuecat/releases/tag/2.6.0),
+[gdUnit4 6.2.2](https://github.com/godot-gdunit-labs/gdUnit4/releases/tag/v6.2.2).
